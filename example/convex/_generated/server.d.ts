@@ -151,38 +151,61 @@ export type DatabaseReader = GenericDatabaseReader<DataModel>;
 export type DatabaseWriter = GenericDatabaseWriter<DataModel>;
 
 export declare const components: {
-  theComponent: {
-    index: {
-      checkRateLimit: FunctionReference<
-        "query",
+  twilio: {
+    messages: {
+      create: FunctionReference<
+        "action",
         "internal",
         {
-          count?: number;
-          key?: string;
-          name: string;
-          name2: string;
-          reserve?: boolean;
-          throws?: boolean;
+          account_sid: string;
+          auth_token: string;
+          body: string;
+          from: string;
+          status_callback: string;
+          to: string;
         },
-        { ok: boolean; retryAt?: number; ts?: number; value?: number }
+        any
       >;
-      rateLimit: FunctionReference<
+      insertIncoming: FunctionReference<
+        "mutation",
+        "internal",
+        { message: any },
+        any
+      >;
+      list: FunctionReference<
+        "action",
+        "internal",
+        { account_sid: string; auth_token: string },
+        any
+      >;
+      updateStatus: FunctionReference<
         "mutation",
         "internal",
         {
-          count?: number;
-          key?: string;
-          name: string;
-          name2: string;
-          reserve?: boolean;
-          throws?: boolean;
+          account_sid: string;
+          auth_token: string;
+          sid: string;
+          status: string;
         },
-        { ok: boolean; retryAt?: number }
+        any
       >;
-      resetRateLimit: FunctionReference<
-        "mutation",
+    };
+    phone_numbers: {
+      create: FunctionReference<
+        "action",
         "internal",
-        { key?: string; name: string },
+        { account_sid: string; auth_token: string; number: string },
+        any
+      >;
+      updateSmsUrl: FunctionReference<
+        "action",
+        "internal",
+        {
+          account_sid: string;
+          auth_token: string;
+          sid: string;
+          sms_url: string;
+        },
         any
       >;
     };

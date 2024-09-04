@@ -1,7 +1,7 @@
 import { defineApp } from "convex/server";
-import component from "../../src/component/convex.config";
+import twilio from "../../src/twilio/convex.config";
 
 const app = defineApp();
-app.use(component, { name: "theComponent" });
+app.use(twilio, { name: "twilio" });
 
 export default app;
