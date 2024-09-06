@@ -20,32 +20,22 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
-        "types": "./dist/esm/client.d.ts",
-        "default": "./dist/esm/client.js"
+        "types": "./dist/esm/client/index.d.ts",
+        "default": "./dist/esm/client/index.js"
       },
       "require": {
-        "types": "./dist/commonjs/client.d.ts",
-        "default": "./dist/commonjs/client.js"
-      }
-    },
-    "./frontend": {
-      "import": {
-        "types": "./dist/esm/frontend.d.ts",
-        "default": "./dist/esm/frontend.js"
-      },
-      "require": {
-        "types": "./dist/commonjs/frontend.d.ts",
-        "default": "./dist/commonjs/frontend.js"
+        "types": "./dist/commonjs/client/index.d.ts",
+        "default": "./dist/commonjs/client/index.js"
       }
     },
     "./convex.config.js": {
       "import": {
-        "types": "./dist/esm/component/convex.config.d.ts",
-        "default": "./dist/esm/component/convex.config.js"
+        "types": "./dist/esm/twilio/convex.config.d.ts",
+        "default": "./dist/esm/twilio/convex.config.js"
       },
       "require": {
-        "types": "./dist/commonjs/component/convex.config.d.ts",
-        "default": "./dist/commonjs/component/convex.config.js"
+        "types": "./dist/commonjs/twilio/convex.config.d.ts",
+        "default": "./dist/commonjs/twilio/convex.config.js"
       }
     }
   },
