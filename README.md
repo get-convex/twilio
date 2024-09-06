@@ -97,6 +97,10 @@ You can associate it with your Twilio phone number in two ways:
 
 2. By calling `registerIncomingSmsHandler` exposed by the component client, passing it the phone number's SID:
 ```
+// convex/messages.ts
+
+// ...
+
 export const registerIncomingSmsHandler = internalAction({
     args: {},
     handler: async (ctx) => {
