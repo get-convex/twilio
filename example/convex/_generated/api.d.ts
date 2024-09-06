@@ -10,7 +10,8 @@
  * @module
  */
 
-import type * as myFunctions from "../myFunctions.js";
+import type * as http from "../http.js";
+import type * as twilio_app from "../twilio_app.js";
 
 import type {
   ApiFromModules,
@@ -26,7 +27,8 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  myFunctions: typeof myFunctions;
+  http: typeof http;
+  twilio_app: typeof twilio_app;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

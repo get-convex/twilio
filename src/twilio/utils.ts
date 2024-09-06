@@ -26,6 +26,8 @@ export const twilioRequest = async function(
     }
     const response = await fetch(url, request);
     if (!response.ok) {
+        console.log(response.status);
+        console.log(await response.text());
         throw new Error("Failed to send request to Twilio");
     }
     return await response.json();
