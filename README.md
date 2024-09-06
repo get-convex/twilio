@@ -100,7 +100,11 @@ You can associate it with your Twilio phone number in two ways:
 export const registerIncomingSmsHandler = internalAction({
     args: {},
     handler: async (ctx) => {
-        return await twilio.registerIncomingSmsHandler(ctx, { sid: "YOUR_TWILIO_PHONE_NUMBER_SID"});
+        return await twilio.registerIncomingSmsHandler(
+            ctx, { 
+                sid: "YOUR_TWILIO_PHONE_NUMBER_SID"
+            }
+        );
     }
 })
 ```
