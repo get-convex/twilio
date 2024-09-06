@@ -5,7 +5,7 @@ Send and receive SMS messages in your Convex app using Twilio.
 ## Prerequisites
 
 ### Twilio Phone Number
-Create a Twilio account and, if you haven't already done so - create a [Twilio Phone Number](https://www.twilio.com/docs/phone-numbers).
+Create a Twilio account and, if you haven't already, create a [Twilio Phone Number](https://www.twilio.com/docs/phone-numbers).
 
 Note the **Phone Number SID** of the phone number you'll be using, you'll need it in a moment.
 
