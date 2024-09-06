@@ -92,7 +92,10 @@ The webhook handler is mounted at
 YOUR_CONVEX_SITE_URL/incoming-message
 ```
 
-You can associate it with your Twilio phone number either using the [Twilio console](https://console.twilio.com/) in the "Configure" tab of the phone number, under "Messaging Configuration" -> "A messsage comes in" -> "URL" or by calling `registerIncomingSmsHandler` exposed by the component client, passing it the phone number's SID:
+You can associate it with your Twilio phone number in two ways:
+1. Using the [Twilio console](https://console.twilio.com/) in the "Configure" tab of the phone number, under "Messaging Configuration" -> "A messsage comes in" -> "URL".
+
+2. By calling `registerIncomingSmsHandler` exposed by the component client, passing it the phone number's SID:
 ```
 export const registerIncomingSmsHandler = internalAction({
     args: {},
