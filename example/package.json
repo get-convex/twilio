@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "convex": "1.15.1-alpha.2",
-    "twilio_component": "file:../twilio_component-0.0.1.tgz"
+    "twilio_component": "file:../twilio_component-0.0.2.tgz"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",

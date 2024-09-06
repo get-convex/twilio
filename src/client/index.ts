@@ -89,7 +89,13 @@ export class Twilio {
       path: "/message-status",
       method: "POST",
       handler: this.updateMessageStatus,
-  })
+    });
+
+    this.http.route({
+      path: "/incoming-message",
+      method: "POST",
+      handler: this.incomingMessage,
+    });
   }
 
   private updateMessageStatus = httpActionGeneric(async (ctx, request) => {
@@ -110,6 +116,18 @@ export class Twilio {
     return new Response(null, { status: 200 });
   });
 
+  private incomingMessage = httpActionGeneric(async (ctx, request) => {
+      const requestValues = new URLSearchParams(await request.text());
+      console.log(requestValues);
+      const record: Record<string, string> = {};
+      requestValues.forEach((value, key) => {
+          record[key] = value;
+      });
+      await ctx.runMutation(this.componentApi.messages.insertIncoming, { message: record });
+      
+      return new Response(null, { status: 200 });
+  })
+
   sendMessage = actionGeneric({
     args: {
         from: v.string(),
@@ -124,6 +142,20 @@ export class Twilio {
             account_sid: this.account_sid,
             auth_token: this.auth_token,
             status_callback: `${this.convex_site_url}/message-status`,
+        });
+    }
+  });
+
+  registerIncomingSmsHandler = actionGeneric({
+    args: {
+        sid: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
+            account_sid: this.account_sid,
+            auth_token: this.auth_token,
+            sid: args.sid,
+            sms_url: `${this.convex_site_url}/incoming-message`,
         });
     }
   });

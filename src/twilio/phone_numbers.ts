@@ -59,15 +59,21 @@ export const updateSmsUrl = action({
         sms_url: v.string(),
     },
     handler: async (ctx, args) => {
+        const path = `IncomingPhoneNumbers/${args.sid}.json`;
         const phone_number = await ctx.runQuery(internal.phone_numbers.get, { sid: args.sid });
+        let convexId;
         if (!phone_number) {
-            throw new Error("Phone number not found");
+            console.log("Phone number not found in table - fetching from Twilio");
+            const data = await twilioRequest(path, args.account_sid, args.auth_token, {}, "GET");
+            console.log("Inserting into table");
+            convexId = await ctx.runMutation(internal.phone_numbers.insert, { phone_number: data });
+        }  else {
+            convexId = phone_number._id;
         }
-        const path = `IncomingPhoneNumbers/${phone_number.sid}.json`;
         const body = {
             SmsUrl: args.sms_url,
         };
         const response = await twilioRequest(path, args.account_sid, args.auth_token, body, "POST");
-        await ctx.runMutation(internal.phone_numbers.patch, { convexId: phone_number._id, sms_url: args.sms_url });
+        await ctx.runMutation(internal.phone_numbers.patch, { convexId, sms_url: args.sms_url });
     }
 })

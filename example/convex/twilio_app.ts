@@ -6,4 +6,6 @@ const twilio = new Twilio(components.twilio, process.env.ACCOUNT_SID ?? "", proc
 
 
 export const appSendMessage = twilio.sendMessage;
+export const registerIncomingSmsHandler = twilio.registerIncomingSmsHandler;
+
 export default twilio;
