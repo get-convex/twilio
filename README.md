@@ -1,111 +1,105 @@
-# Example Convex Component: Rate Limiter
+# Convex Twilio Component
+Send and receive SMS messages in your Convex app using Twilio.
 
-This is a Convex component, ready to be published on npm.
 
-To create your own component:
+## Prerequisites
 
-- change the "name" field in package.json
-- modify src/component/convex.config.ts to use your component name
+### Twilio Phone Number
+Create a Twilio account and, if you haven't already done so - create a [Twilio Phone Number](https://www.twilio.com/docs/phone-numbers).
 
-To develop your component run a dev process in the example project.
+Note the **Phone Number SID** of the phone number you'll be using, you'll need it in a moment.
 
+
+### Convex App
+You'll need a Convex App to use the component. Follow any of the [Convex quickstarts](https://docs.convex.dev/home) to set one up.
+
+## Installation
+
+Install the component package:
 ```
-cd example
-npm i
-npx convex dev
-```
-
-Modify the schema and index files in src/component/ to define your component.
-
-Optionally write a client forusing this component in src/client/index.ts.
-
-If you won't be adding frontend code (e.g. React components) to this
-component you can delete the following:
-
-- "prepack" and "postpack" scripts of package.json
-- "./frontend" exports in package.json
-- the "src/frontend/" directory
-- the "node10stubs.mjs" file
-
-### Component Directory structure
-
-```
-.
-├── README.md           documentation of your component
-├── package.json        component name, version number, other metadata
-├── package-lock.json   Components are like libraries, package-lock.json
-│                       is .gitignored and ignored by consumers.
-├── src
-│   ├── component/
-│   │   ├── _generated/ Files here are generated.
-│   │   ├── convex.config.ts  Name your component here and use other components
-│   │   ├── index.ts    Define functions here and in new files in this directory
-│   │   └── schema.ts   schema specific to this component
-│   ├── client.ts       "Fat" client code goes here.
-│   └── frontend/       Code intended to be used on the frontend goes here.
-│       │               Your are free to delete this if this component
-│       │               does not provide code.
-│       └── index.ts
-├── example/            example Convex app that uses this component
-│   │                   Run 'npx convex dev' from here during development.
-│   ├── package.json.ts Thick client code goes here.
-│   └── convex/
-│       ├── _generated/
-│       ├── convex.config.ts  Imports and uses this component
-│       ├── myFunctions.ts    Functions that use the component
-│       ├── schema.ts         Example app schema
-│       └── tsconfig.json
-│  
-├── dist/               Publishing artifacts will be created here.
-├── commonjs.json       Used during build by TypeScript.
-├── esm.json            Used during build by TypeScript.
-├── node10stubs.mjs     Script used during build for compatibility
-│                       with the Metro bundler used with React Native.
-├── eslint.config.mjs   Recommended lints for writing a component.
-│                       Feel free to customize it.
-└── tsconfig.json       Recommended tsconfig.json for writing a component.
-                        Some settings can be customized, some are required.
+npm install @convex-dev/twilio-component
 ```
 
-### Structure of a Convex Component
 
-A Convex components exposes the entry point convex.config.js. The on-disk
-location of this file must be a directory containing implementation files. These
-files should be compiled to ESM.
-The package.json should contain `"type": "module"` and the tsconfig.json should
-contain `"moduleResolution": "Bundler"` or `"Node16"` in order to import other
-component definitions.
-
-In addition to convex.config.js, a component typically exposes a client that
-wraps communication with the component for use in the Convex
-environment is typically exposed as a named export `MyComponentClient` or
-`MyComponent` imported from the root package.
-
+Create a `convex.config.ts` file in your app's `convex/` folder and install the component by calling `use`:
 ```
-import { MyComponentClient } from "my-convex-component";
+// convex/convex.config.js
+import { defineApp } from "convex/server";
+import twilio from "@convex-dev/twilio-component/convex.config.js";
+
+const app = defineApp();
+app.use(twilio, { name: "twilio" });
+
+export default app;
 ```
 
-When frontend code is included it is typically published at a subpath:
-
+Instantiate a Twilio Component client in a file in your app's `convex/` folder:
 ```
-import { helper } from "my-convex-component/frontend";
-import { FrontendReactComponent } from "my-convex-component/react";
+// convex/twilio.ts
+import { Twilio } from "@convex-dev/twilio-component";
+import { components } from "./_generated/server.js";
+
+const twilio = new Twilio(
+    components.twilio,
+    // REPLACE with your Twilio Account SID
+    process.env.TWILIO_ACCOUNT_SID ?? "",
+    // REPLACE with your Twilio Auth Token
+    process.env.TWILIO_AUTH_TOKEN ?? "",
+    process.env.CONVEX_SITE_URL ?? ""
+);
+
+export default twilio;
 ```
 
-Frontend code should be compiled as CommonJS code as well as ESM and make use of
-subpackage stubs (see next section).
+Register webhooks by creating an `http.ts` file in your `convex/` folder and use the client you've exported above:
+```
+// http.ts
+import twilio from "./twilio";
+export default twilio.http;
+```
 
-If you do include frontend components, prefer peer dependencies to avoid using
-more than one version of e.g. React.
+This will register two webhook HTTP handlers in your your Convex app's deployment:
+- YOUR_CONVEX_SITE_URL/message-status - this will capture delivery status of messages you **send**.
+- YOUR_CONVEX_SITE_URL/incoming-message - this will capture messages **sent to** your Twilio phone number.
 
-### Support for Node10 module resolution
+## Sending Messages
+To send a message use the Convex action `sendMessage` exposed by the client, for example:
+```
+// convex/messages.ts
+import { v } from "convex/values";
+import { internalAction } from "./_generated/server";
+import twilio from "./twilio";
 
-The [Metro](https://reactnative.dev/docs/metro) bundler for React Native
-requires setting
-[`resolver.unstable_enablePackageExports`](https://metrobundler.dev/docs/package-exports/)
-in order to import code that lives in `dist/esm/frontend.js` from a path like
-`my-convex-component/frontend`.
+export const sendSms = internalAction({
+    args: {
+        to: v.string(),
+        body: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.sendMessage(ctx, {
+            ...args,
+            from: "YOUR_TWILIO_PHONE_NUMBER",
+        });
+    }
+})
+```
 
-Authors of Convex component that provide frontend components are encouraged to
-support these legacy "Node10-style" module resolution algorithms by generating
-stub directories with special pre- and post-pack scripts.
+
+## Receiving Messages
+To receive messages, you will associate a webhook handler provided by the component with the Twilio phone number you'd like to use.
+The webhook handler is mounted at 
+```
+YOUR_CONVEX_SITE_URL/incoming-message
+```
+
+You can associate it with your Twilio phone number either using the [Twilio console](https://console.twilio.com/) in the "Configure" tab of the phone number, under "Messaging Configuration" -> "A messsage comes in" -> "URL" or by calling `registerIncomingSmsHandler` exposed by the component client, passing it the phone number's SID:
+```
+export const registerIncomingSmsHandler = internalAction({
+    args: {},
+    handler: async (ctx) => {
+        return await twilio.registerIncomingSmsHandler(ctx, { sid: "YOUR_TWILIO_PHONE_NUMBER_SID"});
+    }
+})
+```
+
+Now, incoming messages will be captured by the component and logged in the `incoming_messages` table.

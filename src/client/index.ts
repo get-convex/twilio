@@ -1,6 +1,6 @@
 // This file is for thick component clients and helpers that run
 
-import { actionGeneric, FunctionReference, httpActionGeneric, httpRouter, HttpRouter } from "convex/server";
+import { actionGeneric, FunctionReference, GenericActionCtx, GenericDataModel, httpActionGeneric, httpRouter, HttpRouter } from "convex/server";
 import { v } from "convex/values";
 // on the Convex backend.
 declare global {
@@ -71,6 +71,11 @@ type componentApiType = {
     >;
   };
 }
+
+type RunActionCtx = {
+  runAction: GenericActionCtx<GenericDataModel>["runAction"];
+};
+
 export class Twilio {
   account_sid: string;
   auth_token: string;
@@ -128,35 +133,23 @@ export class Twilio {
       return new Response(null, { status: 200 });
   })
 
-  sendMessage = actionGeneric({
-    args: {
-        from: v.string(),
-        to: v.string(),
-        body: v.string(),
-    },
-    handler: async (ctx, args) => {
-        return await ctx.runAction(this.componentApi.messages.create, {
-            from: args.from,
-            to: args.to,
-            body: args.body,
-            account_sid: this.account_sid,
-            auth_token: this.auth_token,
-            status_callback: `${this.convex_site_url}/message-status`,
-        });
-    }
-  });
+  async sendMessage (ctx: RunActionCtx, args: { from: string; to: string; body: string; }) {
+      return ctx.runAction(this.componentApi.messages.create, {
+          from: args.from,
+          to: args.to,
+          body: args.body,
+          account_sid: this.account_sid,
+          auth_token: this.auth_token,
+          status_callback: `${this.convex_site_url}/message-status`,
+      });
+  };
 
-  registerIncomingSmsHandler = actionGeneric({
-    args: {
-        sid: v.string(),
-    },
-    handler: async (ctx, args) => {
-        return await ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
-            account_sid: this.account_sid,
-            auth_token: this.auth_token,
-            sid: args.sid,
-            sms_url: `${this.convex_site_url}/incoming-message`,
-        });
-    }
-  });
+  async registerIncomingSmsHandler (ctx: RunActionCtx, args: { sid: string }) {
+      return ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
+          account_sid: this.account_sid,
+          auth_token: this.auth_token,
+          sid: args.sid,
+          sms_url: `${this.convex_site_url}/incoming-message`,
+      });
+  };
 }

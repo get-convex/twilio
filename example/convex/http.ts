@@ -1,2 +1,2 @@
-import twilio from "./twilio_app";
+import twilio from "./twilio";
 export default twilio.http;
