@@ -50,6 +50,7 @@ import { components } from "./_generated/server.js";
 
 const twilio = new Twilio(components.twilio);
 
+// export to be used everywhere in your /convex code
 export default twilio;
 ```
 
