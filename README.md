@@ -36,7 +36,7 @@ export default app;
 Instantiate a Twilio Component client in a file in your app's `convex/` folder:
 ```
 // convex/twilio.ts
-import { Twilio } from "@convex-dev/twilio-component";
+import Twilio from "@convex-dev/twilio-component";
 import { components } from "./_generated/server.js";
 
 const twilio = new Twilio(

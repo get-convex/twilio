@@ -76,7 +76,7 @@ type RunActionCtx = {
   runAction: GenericActionCtx<GenericDataModel>["runAction"];
 };
 
-export class Twilio {
+export default class Twilio {
   account_sid: string;
   auth_token: string;
   convex_site_url: string;
