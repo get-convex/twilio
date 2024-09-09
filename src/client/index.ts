@@ -82,32 +82,27 @@ type RunActionCtx = {
 };
 
 export default class Twilio {
-  account_sid: string;
-  auth_token: string;
-  convex_site_url: string;
   http: HttpRouter;
-  componentApi: componentApiType;
 
   constructor(
-    componentApi: componentApiType,
-    account_sid: string,
-    auth_token: string,
-    convex_site_url: string
+    public componentApi: componentApiType,
+    public account_sid: string,
+    public auth_token: string,
+    public http_prefix: string = "/twilio"
   ) {
     this.account_sid = account_sid;
     this.auth_token = auth_token;
-    this.convex_site_url = convex_site_url;
     this.componentApi = componentApi;
 
     this.http = new MountableHttpRouter();
     this.http.route({
-      path: "/twilio/message-status",
+      path: http_prefix + "/message-status",
       method: "POST",
       handler: this.updateMessageStatus,
     });
 
     this.http.route({
-      path: "/twilio/incoming-message",
+      path: http_prefix + "/incoming-message",
       method: "POST",
       handler: this.incomingMessage,
     });
@@ -155,7 +150,8 @@ export default class Twilio {
       body: args.body,
       account_sid: this.account_sid,
       auth_token: this.auth_token,
-      status_callback: `${this.convex_site_url}/twilio/message-status`,
+      status_callback:
+        process.env.CONVEX_SITE_URL + this.http_prefix + "/message-status",
     });
   }
 
@@ -164,7 +160,8 @@ export default class Twilio {
       account_sid: this.account_sid,
       auth_token: this.auth_token,
       sid: args.sid,
-      sms_url: `${this.convex_site_url}/twilio/incoming-message`,
+      sms_url:
+        process.env.CONVEX_SITE_URL + this.http_prefix + "/incoming-message",
     });
   }
 }
