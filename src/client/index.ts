@@ -1,7 +1,12 @@
 // This file is for thick component clients and helpers that run
 
-import { actionGeneric, FunctionReference, GenericActionCtx, GenericDataModel, httpActionGeneric, httpRouter, HttpRouter } from "convex/server";
-import { v } from "convex/values";
+import {
+  FunctionReference,
+  GenericActionCtx,
+  GenericDataModel,
+  httpActionGeneric,
+  HttpRouter,
+} from "convex/server";
 // on the Convex backend.
 declare global {
   const Convex: Record<string, unknown>;
@@ -70,7 +75,7 @@ type componentApiType = {
       any
     >;
   };
-}
+};
 
 type RunActionCtx = {
   runAction: GenericActionCtx<GenericDataModel>["runAction"];
@@ -83,21 +88,26 @@ export default class Twilio {
   http: HttpRouter;
   componentApi: componentApiType;
 
-  constructor(componentApi: componentApiType, account_sid: string, auth_token: string, convex_site_url: string) {
+  constructor(
+    componentApi: componentApiType,
+    account_sid: string,
+    auth_token: string,
+    convex_site_url: string
+  ) {
     this.account_sid = account_sid;
     this.auth_token = auth_token;
     this.convex_site_url = convex_site_url;
     this.componentApi = componentApi;
 
-    this.http = httpRouter();
+    this.http = new MountableHttpRouter();
     this.http.route({
-      path: "/message-status",
+      path: "/twilio/message-status",
       method: "POST",
       handler: this.updateMessageStatus,
     });
 
     this.http.route({
-      path: "/incoming-message",
+      path: "/twilio/incoming-message",
       method: "POST",
       handler: this.incomingMessage,
     });
@@ -107,49 +117,102 @@ export default class Twilio {
     const requestValues = new URLSearchParams(await request.text());
     const sid = requestValues.get("MessageSid");
     const status = requestValues.get("MessageStatus");
-    
+
     if (sid && status) {
-        await ctx.runMutation(this.componentApi.messages.updateStatus, {
-            account_sid: this.account_sid,
-            auth_token: this.auth_token,
-            sid: sid ?? "",
-            status: status ?? "",
-        })    
+      await ctx.runMutation(this.componentApi.messages.updateStatus, {
+        account_sid: this.account_sid,
+        auth_token: this.auth_token,
+        sid: sid ?? "",
+        status: status ?? "",
+      });
     } else {
-        console.log(`Invalid request: ${requestValues}`);
+      console.log(`Invalid request: ${requestValues}`);
     }
     return new Response(null, { status: 200 });
   });
 
   private incomingMessage = httpActionGeneric(async (ctx, request) => {
-      const requestValues = new URLSearchParams(await request.text());
-      console.log(requestValues);
-      const record: Record<string, string> = {};
-      requestValues.forEach((value, key) => {
-          record[key] = value;
-      });
-      await ctx.runMutation(this.componentApi.messages.insertIncoming, { message: record });
-      
-      return new Response(null, { status: 200 });
-  })
+    const requestValues = new URLSearchParams(await request.text());
+    console.log(requestValues);
+    const record: Record<string, string> = {};
+    requestValues.forEach((value, key) => {
+      record[key] = value;
+    });
+    await ctx.runMutation(this.componentApi.messages.insertIncoming, {
+      message: record,
+    });
 
-  async sendMessage (ctx: RunActionCtx, args: { from: string; to: string; body: string; }) {
-      return ctx.runAction(this.componentApi.messages.create, {
-          from: args.from,
-          to: args.to,
-          body: args.body,
-          account_sid: this.account_sid,
-          auth_token: this.auth_token,
-          status_callback: `${this.convex_site_url}/message-status`,
-      });
-  };
+    return new Response(null, { status: 200 });
+  });
 
-  async registerIncomingSmsHandler (ctx: RunActionCtx, args: { sid: string }) {
-      return ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
-          account_sid: this.account_sid,
-          auth_token: this.auth_token,
-          sid: args.sid,
-          sms_url: `${this.convex_site_url}/incoming-message`,
-      });
-  };
+  async sendMessage(
+    ctx: RunActionCtx,
+    args: { from: string; to: string; body: string }
+  ) {
+    return ctx.runAction(this.componentApi.messages.create, {
+      from: args.from,
+      to: args.to,
+      body: args.body,
+      account_sid: this.account_sid,
+      auth_token: this.auth_token,
+      status_callback: `${this.convex_site_url}/twilio/message-status`,
+    });
+  }
+
+  async registerIncomingSmsHandler(ctx: RunActionCtx, args: { sid: string }) {
+    return ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
+      account_sid: this.account_sid,
+      auth_token: this.auth_token,
+      sid: args.sid,
+      sms_url: `${this.convex_site_url}/twilio/incoming-message`,
+    });
+  }
+}
+
+// TODO: Move this into an npm library / core
+/**
+ * A router that can be mounted onto an existing HttpRouter instance.
+ */
+export class MountableHttpRouter extends HttpRouter {
+  constructor() {
+    super();
+  }
+  /**
+   * Registers the routes from this instance with an existing HttpRouter instance.
+   * @param http An existing HttpRouter instance
+   */
+  registerRoutes(http: HttpRouter) {
+    this.mergeRouters(http, this);
+  }
+  mergeRouters(destination: HttpRouter, source: HttpRouter) {
+    const existingPaths = new Set(destination.exactRoutes.keys());
+    const existingPrefixes = [...destination.prefixRoutes.values()].flatMap(
+      (prefixRoutes) => [...prefixRoutes.keys()]
+    );
+    function checkForCollisions(path: string) {
+      if (existingPaths.has(path)) {
+        throw new Error(`Route already exists: ${path}`);
+      }
+      const existingPrefix = existingPrefixes.find((prefix) =>
+        path.startsWith(prefix)
+      );
+      if (existingPrefix !== undefined) {
+        throw new Error(`Route prefix ${existingPrefix} conflicts: ${path}`);
+      }
+    }
+
+    for (const [path, routeByMethod] of source.exactRoutes.entries()) {
+      checkForCollisions(path);
+      for (const [method, handler] of routeByMethod.entries()) {
+        destination.route({ path, method, handler });
+      }
+    }
+    for (const [method, routeByPrefix] of source.prefixRoutes.entries()) {
+      for (const [pathPrefix, handler] of routeByPrefix.entries()) {
+        checkForCollisions(pathPrefix);
+        destination.route({ pathPrefix, method, handler });
+      }
+    }
+    return destination;
+  }
 }
