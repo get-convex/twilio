@@ -56,12 +56,6 @@ export default twilio;
 
 Register webhooks by creating an `http.ts` file in your `convex/` folder and use the client you've exported above:
 
-```ts
-// http.ts
-import twilio from "./twilio";
-export default twilio.http;
-```
-
 Or, if you already have an http router:
 
 ```ts
