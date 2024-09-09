@@ -53,18 +53,35 @@ export default twilio;
 ```
 
 Register webhooks by creating an `http.ts` file in your `convex/` folder and use the client you've exported above:
-```
+
+```ts
 // http.ts
 import twilio from "./twilio";
 export default twilio.http;
 ```
 
+Or, if you already have an http router:
+
+```ts
+import twilio from "./twilio";
+import { httpRouter } from "convex/server";
+
+const http = httpRouter();
+twilio.http.registerRoutes(http);
+export default http;
+```
+
 This will register two webhook HTTP handlers in your your Convex app's deployment:
-- YOUR_CONVEX_SITE_URL/message-status - this will capture delivery status of messages you **send**.
-- YOUR_CONVEX_SITE_URL/incoming-message - this will capture messages **sent to** your Twilio phone number.
+
+- YOUR_CONVEX_SITE_URL/twilio/message-status - this will capture delivery status of messages you **send**.
+- YOUR_CONVEX_SITE_URL/twilio/incoming-message - this will capture messages **sent to** your Twilio phone number.
+
+Note: if you want to route twilio endpoints somewhere else, pass a custom http_prefix
 
 ## Sending Messages
+
 To send a message use the Convex action `sendMessage` exposed by the client, for example:
+
 ```
 // convex/messages.ts
 import { v } from "convex/values";
