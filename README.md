@@ -1,28 +1,30 @@
 # Convex Twilio Component
-Send and receive SMS messages in your Convex app using Twilio.
 
+Send and receive SMS messages in your Convex app using Twilio.
 
 ## Prerequisites
 
 ### Twilio Phone Number
+
 Create a Twilio account and, if you haven't already, create a [Twilio Phone Number](https://www.twilio.com/docs/phone-numbers).
 
 Note the **Phone Number SID** of the phone number you'll be using, you'll need it in a moment.
 
-
 ### Convex App
+
 You'll need a Convex App to use the component. Follow any of the [Convex quickstarts](https://docs.convex.dev/home) to set one up.
 
 ## Installation
 
 Install the component package:
-```
+
+```ts
 npm install @convex-dev/twilio-component
 ```
 
-
 Create a `convex.config.ts` file in your app's `convex/` folder and install the component by calling `use`:
-```
+
+```ts
 // convex/convex.config.js
 import { defineApp } from "convex/server";
 import twilio from "@convex-dev/twilio-component/convex.config.js";
@@ -102,18 +104,21 @@ export const sendSms = internalAction({
 })
 ```
 
-
 ## Receiving Messages
+
 To receive messages, you will associate a webhook handler provided by the component with the Twilio phone number you'd like to use.
-The webhook handler is mounted at 
+The webhook handler is mounted at
+
 ```
 YOUR_CONVEX_SITE_URL/incoming-message
 ```
 
 You can associate it with your Twilio phone number in two ways:
+
 1. Using the [Twilio console](https://console.twilio.com/) in the "Configure" tab of the phone number, under "Messaging Configuration" -> "A messsage comes in" -> "URL".
 
 2. By calling `registerIncomingSmsHandler` exposed by the component client, passing it the phone number's SID:
+
 ```
 // convex/messages.ts
 
@@ -123,7 +128,7 @@ export const registerIncomingSmsHandler = internalAction({
     args: {},
     handler: async (ctx) => {
         return await twilio.registerIncomingSmsHandler(
-            ctx, { 
+            ctx, {
                 sid: "YOUR_TWILIO_PHONE_NUMBER_SID"
             }
         );
