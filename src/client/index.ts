@@ -82,27 +82,39 @@ type RunActionCtx = {
 };
 
 export default class Twilio {
+  account_sid: string;
+  auth_token: string;
+  http_prefix: string;
   http: HttpRouter;
 
   constructor(
     public componentApi: componentApiType,
-    public account_sid: string,
-    public auth_token: string,
-    public http_prefix: string = "/twilio"
+    options?: {
+      account_sid?: string;
+      auth_token?: string;
+      http_prefix?: string;
+    }
   ) {
-    this.account_sid = account_sid;
-    this.auth_token = auth_token;
-    this.componentApi = componentApi;
+    this.account_sid = options?.account_sid ?? process.env.TWILIO_ACCOUNT_SID!;
+    this.auth_token = options?.auth_token ?? process.env.TWILIO_AUTH_TOKEN!;
+    if (!this.account_sid || !this.auth_token) {
+      throw new Error(
+        "Missing Twilio credentials\n\n" +
+          "npx convex env set TWILIO_ACCOUNT_SID=ACxxxxx\n" +
+          "npx convex env set TWILIO_AUTH_TOKEN=xxxxx"
+      );
+    }
+    this.http_prefix = options?.http_prefix ?? "/twilio";
 
     this.http = new MountableHttpRouter();
     this.http.route({
-      path: http_prefix + "/message-status",
+      path: this.http_prefix + "/message-status",
       method: "POST",
       handler: this.updateMessageStatus,
     });
 
     this.http.route({
-      path: http_prefix + "/incoming-message",
+      path: this.http_prefix + "/incoming-message",
       method: "POST",
       handler: this.incomingMessage,
     });

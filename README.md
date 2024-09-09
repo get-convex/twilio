@@ -28,25 +28,26 @@ import { defineApp } from "convex/server";
 import twilio from "@convex-dev/twilio-component/convex.config.js";
 
 const app = defineApp();
-app.use(twilio, { name: "twilio" });
+app.use(twilio);
 
 export default app;
 ```
 
-Instantiate a Twilio Component client in a file in your app's `convex/` folder:
+Set your API credentials:
+
+```sh
+npx convex env set TWILIO_ACCOUNT_SID=ACxxxxx
+npx convex env set TWILIO_AUTH_TOKEN=xxxxx
 ```
+
+Instantiate a Twilio Component client in a file in your app's `convex/` folder:
+
+```ts
 // convex/twilio.ts
 import Twilio from "@convex-dev/twilio-component";
 import { components } from "./_generated/server.js";
 
-const twilio = new Twilio(
-    components.twilio,
-    // REPLACE with your Twilio Account SID
-    process.env.TWILIO_ACCOUNT_SID ?? "",
-    // REPLACE with your Twilio Auth Token
-    process.env.TWILIO_AUTH_TOKEN ?? "",
-    process.env.CONVEX_SITE_URL ?? ""
-);
+const twilio = new Twilio(components.twilio);
 
 export default twilio;
 ```
