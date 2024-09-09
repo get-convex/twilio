@@ -1,2 +1,5 @@
 import twilio from "./twilio";
-export default twilio.http;
+import { httpRouter } from "convex/server";
+
+const http = httpRouter();
+twilio.http.registerRoutes(http);
