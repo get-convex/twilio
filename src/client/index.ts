@@ -5,6 +5,7 @@ import {
   GenericActionCtx,
   GenericDataModel,
   httpActionGeneric,
+  httpRouter,
   HttpRouter,
 } from "convex/server";
 // on the Convex backend.
@@ -106,7 +107,7 @@ export default class Twilio {
     }
     this.http_prefix = options?.http_prefix ?? "/twilio";
 
-    this.http = new MountableHttpRouter();
+    this.http = httpRouter();
     this.http.route({
       path: this.http_prefix + "/message-status",
       method: "POST",
@@ -118,6 +119,10 @@ export default class Twilio {
       method: "POST",
       handler: this.incomingMessage,
     });
+  }
+
+  registerRoutes(http: HttpRouter) {
+    mergeRouters(http, this.http);
   }
 
   private updateMessageStatus = httpActionGeneric(async (ctx, request) => {
@@ -178,50 +183,34 @@ export default class Twilio {
   }
 }
 
-// TODO: Move this into an npm library / core
-/**
- * A router that can be mounted onto an existing HttpRouter instance.
- */
-export class MountableHttpRouter extends HttpRouter {
-  constructor() {
-    super();
-  }
-  /**
-   * Registers the routes from this instance with an existing HttpRouter instance.
-   * @param http An existing HttpRouter instance
-   */
-  registerRoutes(http: HttpRouter) {
-    this.mergeRouters(http, this);
-  }
-  mergeRouters(destination: HttpRouter, source: HttpRouter) {
-    const existingPaths = new Set(destination.exactRoutes.keys());
-    const existingPrefixes = [...destination.prefixRoutes.values()].flatMap(
-      (prefixRoutes) => [...prefixRoutes.keys()]
+// TODO: Document using the built-in `.mount` once it's available
+function mergeRouters(destination: HttpRouter, source: HttpRouter) {
+  const existingPaths = new Set(destination.exactRoutes.keys());
+  const existingPrefixes = [...destination.prefixRoutes.values()].flatMap(
+    (prefixRoutes) => [...prefixRoutes.keys()]
+  );
+  function checkForCollisions(path: string) {
+    if (existingPaths.has(path)) {
+      throw new Error(`Route already exists: ${path}`);
+    }
+    const existingPrefix = existingPrefixes.find((prefix) =>
+      path.startsWith(prefix)
     );
-    function checkForCollisions(path: string) {
-      if (existingPaths.has(path)) {
-        throw new Error(`Route already exists: ${path}`);
-      }
-      const existingPrefix = existingPrefixes.find((prefix) =>
-        path.startsWith(prefix)
-      );
-      if (existingPrefix !== undefined) {
-        throw new Error(`Route prefix ${existingPrefix} conflicts: ${path}`);
-      }
+    if (existingPrefix !== undefined) {
+      throw new Error(`Route prefix ${existingPrefix} conflicts: ${path}`);
     }
+  }
 
-    for (const [path, routeByMethod] of source.exactRoutes.entries()) {
-      checkForCollisions(path);
-      for (const [method, handler] of routeByMethod.entries()) {
-        destination.route({ path, method, handler });
-      }
+  for (const [path, routeByMethod] of source.exactRoutes.entries()) {
+    checkForCollisions(path);
+    for (const [method, handler] of routeByMethod.entries()) {
+      destination.route({ path, method, handler });
     }
-    for (const [method, routeByPrefix] of source.prefixRoutes.entries()) {
-      for (const [pathPrefix, handler] of routeByPrefix.entries()) {
-        checkForCollisions(pathPrefix);
-        destination.route({ pathPrefix, method, handler });
-      }
+  }
+  for (const [method, routeByPrefix] of source.prefixRoutes.entries()) {
+    for (const [pathPrefix, handler] of routeByPrefix.entries()) {
+      checkForCollisions(pathPrefix);
+      destination.route({ pathPrefix, method, handler });
     }
-    return destination;
   }
 }
