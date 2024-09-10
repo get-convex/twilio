@@ -1,6 +1,6 @@
 {
   "name": "twilio_component",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "type": "module",
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs",
