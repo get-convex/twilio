@@ -5,7 +5,6 @@ import {
   GenericActionCtx,
   GenericDataModel,
   httpActionGeneric,
-  httpRouter,
   HttpRouter,
 } from "convex/server";
 // on the Convex backend.
