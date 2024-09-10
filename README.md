@@ -23,7 +23,6 @@ npm install @convex-dev/twilio-component
 ```
 
 Create a `convex.config.ts` file in your app's `convex/` folder and install the component by calling `use`:
-
 ```ts
 // convex/convex.config.js
 import { defineApp } from "convex/server";
@@ -59,6 +58,7 @@ Register webhooks by creating an `http.ts` file in your `convex/` folder and use
 Or, if you already have an http router:
 
 ```ts
+// http.ts
 import twilio from "./twilio";
 import { httpRouter } from "convex/server";
 
@@ -77,8 +77,7 @@ Note: if you want to route twilio endpoints somewhere else, pass a custom http_p
 ## Sending Messages
 
 To send a message use the Convex action `sendMessage` exposed by the client, for example:
-
-```
+```ts
 // convex/messages.ts
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
@@ -112,8 +111,7 @@ You can associate it with your Twilio phone number in two ways:
 1. Using the [Twilio console](https://console.twilio.com/) in the "Configure" tab of the phone number, under "Messaging Configuration" -> "A messsage comes in" -> "URL".
 
 2. By calling `registerIncomingSmsHandler` exposed by the component client, passing it the phone number's SID:
-
-```
+```ts
 // convex/messages.ts
 
 // ...
