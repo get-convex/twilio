@@ -45,6 +45,12 @@ type componentApiType = {
       { account_sid: string; },
       any
     >;
+    listIncoming: FunctionReference<
+      "query",
+      "internal",
+      { account_sid: string; },
+      any
+    >;
     updateStatus: FunctionReference<
       "mutation",
       "internal",
@@ -153,6 +159,14 @@ export default class Twilio {
     ctx: RunQueryCtx,
   ) {
     return ctx.runQuery(this.componentApi.messages.list, {
+      account_sid: this.account_sid,
+    })
+  }
+
+  async listIncoming(
+    ctx: RunQueryCtx,
+  ) {
+    return ctx.runQuery(this.componentApi.messages.listIncoming, {
       account_sid: this.account_sid,
     })
   }

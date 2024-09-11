@@ -132,7 +132,9 @@ export const registerIncomingSmsHandler = internalAction({
 Now, incoming messages will be captured by the component and logged in the `incoming_messages` table.
 
 ## Querying Messages
-To list all the mssages, use the `list` method of the `Twilio` class in your Convex function:
+To list all the mssages, use the `list` method of the `Twilio` class in your Convex function.
+
+To list all the incoming messages, use the `listIncoming` method of the `Twilio` class:
 ```ts
 // convex/messages.ts
 
@@ -142,6 +144,13 @@ export const list = query({
     args: {},
     handler: async (ctx) => {
         return await twilio.list(ctx);
+    }
+})
+
+export const listIncoming = query({
+    args: {},
+    handler: async (ctx) => {
+        return await twilio.listIncoming(ctx);
     }
 })
 ```

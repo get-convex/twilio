@@ -178,6 +178,12 @@ export declare const components: {
         { account_sid: string },
         any
       >;
+      listIncoming: FunctionReference<
+        "query",
+        "internal",
+        { account_sid: string },
+        any
+      >;
       updateStatus: FunctionReference<
         "mutation",
         "internal",

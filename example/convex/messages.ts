@@ -28,3 +28,10 @@ export const list = query({
         return await twilio.list(ctx);
     }
 })
+
+export const listIncoming = query({
+    args: {},
+    handler: async (ctx) => {
+        return await twilio.listIncoming(ctx);
+    }
+})

@@ -44,6 +44,17 @@ export const list = query({
     }
 })
 
+export const listIncoming = query({
+    args: {
+        account_sid: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.db.query("incoming_messages")
+            .filter(q => q.eq(q.field("AccountSid"), args.account_sid))
+            .collect();
+    }
+})
+
 export const updateStatus = mutation({
     args: {
         account_sid: v.string(),
