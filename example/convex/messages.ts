@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalAction } from "./_generated/server";
+import { internalAction, query } from "./_generated/server";
 import twilio from "./twilio";
 
 export const sendSms = internalAction({
@@ -19,5 +19,19 @@ export const registerIncomingSmsHandler = internalAction({
     args: {},
     handler: async (ctx) => {
         return await twilio.registerIncomingSmsHandler(ctx, { sid: process.env.TWILIO_PHONE_NUMBER_SID || ""});
+    }
+})
+
+export const list = query({
+    args: {},
+    handler: async (ctx) => {
+        return await twilio.list(ctx);
+    }
+})
+
+export const listIncoming = query({
+    args: {},
+    handler: async (ctx) => {
+        return await twilio.listIncoming(ctx);
     }
 })

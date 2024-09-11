@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { action, internalMutation, mutation } from "./_generated/server.js";
-import { api, internal } from "./_generated/api.js";
+import { action, internalMutation, mutation, query } from "./_generated/server.js";
+import { internal } from "./_generated/api.js";
 import { twilioRequest } from "./utils.js";
 
 export const create = action({
@@ -33,13 +33,25 @@ export const insert = internalMutation({
     }
 })
 
-export const list = action({
+export const list = query({
     args: {
         account_sid: v.string(),
-        auth_token: v.string(),
     },
     handler: async (ctx, args) => {
-        return await twilioRequest("Messages.json", args.account_sid, args.auth_token, {}, "GET");
+        return await ctx.db.query("messages")
+            .filter(q => q.eq(q.field("account_sid"), args.account_sid))
+            .collect();
+    }
+})
+
+export const listIncoming = query({
+    args: {
+        account_sid: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.db.query("incoming_messages")
+            .filter(q => q.eq(q.field("AccountSid"), args.account_sid))
+            .collect();
     }
 })
 

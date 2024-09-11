@@ -4,6 +4,7 @@ import {
   FunctionReference,
   GenericActionCtx,
   GenericDataModel,
+  GenericQueryCtx,
   httpActionGeneric,
   HttpRouter,
 } from "convex/server";
@@ -39,9 +40,15 @@ type componentApiType = {
       any
     >;
     list: FunctionReference<
-      "action",
+      "query",
       "internal",
-      { account_sid: string; auth_token: string },
+      { account_sid: string; },
+      any
+    >;
+    listIncoming: FunctionReference<
+      "query",
+      "internal",
+      { account_sid: string; },
       any
     >;
     updateStatus: FunctionReference<
@@ -79,6 +86,9 @@ type componentApiType = {
 
 type RunActionCtx = {
   runAction: GenericActionCtx<GenericDataModel>["runAction"];
+};
+type RunQueryCtx = {
+  runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
 };
 
 export default class Twilio {
@@ -120,6 +130,47 @@ export default class Twilio {
     });
   }
 
+  async sendMessage(
+    ctx: RunActionCtx,
+    args: { from: string; to: string; body: string }
+  ) {
+    return ctx.runAction(this.componentApi.messages.create, {
+      from: args.from,
+      to: args.to,
+      body: args.body,
+      account_sid: this.account_sid,
+      auth_token: this.auth_token,
+      status_callback:
+        process.env.CONVEX_SITE_URL + this.http_prefix + "/message-status",
+    });
+  }
+
+  async registerIncomingSmsHandler(ctx: RunActionCtx, args: { sid: string }) {
+    return ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
+      account_sid: this.account_sid,
+      auth_token: this.auth_token,
+      sid: args.sid,
+      sms_url:
+        process.env.CONVEX_SITE_URL + this.http_prefix + "/incoming-message",
+    });
+  }
+
+  async list(
+    ctx: RunQueryCtx,
+  ) {
+    return ctx.runQuery(this.componentApi.messages.list, {
+      account_sid: this.account_sid,
+    })
+  }
+
+  async listIncoming(
+    ctx: RunQueryCtx,
+  ) {
+    return ctx.runQuery(this.componentApi.messages.listIncoming, {
+      account_sid: this.account_sid,
+    })
+  }
+
   private updateMessageStatus = httpActionGeneric(async (ctx, request) => {
     const requestValues = new URLSearchParams(await request.text());
     const sid = requestValues.get("MessageSid");
@@ -151,29 +202,4 @@ export default class Twilio {
 
     return new Response(null, { status: 200 });
   });
-
-  async sendMessage(
-    ctx: RunActionCtx,
-    args: { from: string; to: string; body: string }
-  ) {
-    return ctx.runAction(this.componentApi.messages.create, {
-      from: args.from,
-      to: args.to,
-      body: args.body,
-      account_sid: this.account_sid,
-      auth_token: this.auth_token,
-      status_callback:
-        process.env.CONVEX_SITE_URL + this.http_prefix + "/message-status",
-    });
-  }
-
-  async registerIncomingSmsHandler(ctx: RunActionCtx, args: { sid: string }) {
-    return ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
-      account_sid: this.account_sid,
-      auth_token: this.auth_token,
-      sid: args.sid,
-      sms_url:
-        process.env.CONVEX_SITE_URL + this.http_prefix + "/incoming-message",
-    });
-  }
 }
