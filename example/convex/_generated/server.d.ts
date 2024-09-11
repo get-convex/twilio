@@ -173,9 +173,9 @@ export declare const components: {
         any
       >;
       list: FunctionReference<
-        "action",
+        "query",
         "internal",
-        { account_sid: string; auth_token: string },
+        { account_sid: string },
         any
       >;
       updateStatus: FunctionReference<
