@@ -19,14 +19,15 @@ You'll need a Convex App to use the component. Follow any of the [Convex quickst
 Install the component package:
 
 ```ts
-npm install @convex-dev/twilio-component
+npm install @convex-dev/twilio
 ```
 
 Create a `convex.config.ts` file in your app's `convex/` folder and install the component by calling `use`:
+
 ```ts
 // convex/convex.config.js
 import { defineApp } from "convex/server";
-import twilio from "@convex-dev/twilio-component/convex.config.js";
+import twilio from "@convex-dev/twilio/convex.config.js";
 
 const app = defineApp();
 app.use(twilio);
@@ -45,7 +46,7 @@ Instantiate a Twilio Component client in a file in your app's `convex/` folder:
 
 ```ts
 // convex/twilio.ts
-import Twilio from "@convex-dev/twilio-component";
+import Twilio from "@convex-dev/twilio";
 import { components } from "./_generated/server.js";
 
 const twilio = new Twilio(components.twilio);
@@ -78,6 +79,7 @@ Note: if you want to route twilio endpoints somewhere else, pass a custom http_p
 ## Sending Messages
 
 To send a message use the Convex action `sendMessage` exposed by the client, for example:
+
 ```ts
 // convex/messages.ts
 import { v } from "convex/values";
@@ -85,17 +87,17 @@ import { internalAction } from "./_generated/server";
 import twilio from "./twilio";
 
 export const sendSms = internalAction({
-    args: {
-        to: v.string(),
-        body: v.string(),
-    },
-    handler: async (ctx, args) => {
-        return await twilio.sendMessage(ctx, {
-            ...args,
-            from: "YOUR_TWILIO_PHONE_NUMBER",
-        });
-    }
-})
+  args: {
+    to: v.string(),
+    body: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await twilio.sendMessage(ctx, {
+      ...args,
+      from: "YOUR_TWILIO_PHONE_NUMBER",
+    });
+  },
+});
 ```
 
 ## Receiving Messages
@@ -112,45 +114,46 @@ You can associate it with your Twilio phone number in two ways:
 1. Using the [Twilio console](https://console.twilio.com/) in the "Configure" tab of the phone number, under "Messaging Configuration" -> "A messsage comes in" -> "URL".
 
 2. By calling `registerIncomingSmsHandler` exposed by the component client, passing it the phone number's SID:
+
 ```ts
 // convex/messages.ts
 
 // ...
 
 export const registerIncomingSmsHandler = internalAction({
-    args: {},
-    handler: async (ctx) => {
-        return await twilio.registerIncomingSmsHandler(
-            ctx, {
-                sid: "YOUR_TWILIO_PHONE_NUMBER_SID"
-            }
-        );
-    }
-})
+  args: {},
+  handler: async (ctx) => {
+    return await twilio.registerIncomingSmsHandler(ctx, {
+      sid: "YOUR_TWILIO_PHONE_NUMBER_SID",
+    });
+  },
+});
 ```
 
 Now, incoming messages will be captured by the component and logged in the `incoming_messages` table.
 
 ## Querying Messages
+
 To list all the mssages, use the `list` method of the `Twilio` class in your Convex function.
 
 To list all the incoming messages, use the `listIncoming` method of the `Twilio` class:
+
 ```ts
 // convex/messages.ts
 
 // ...
 
 export const list = query({
-    args: {},
-    handler: async (ctx) => {
-        return await twilio.list(ctx);
-    }
-})
+  args: {},
+  handler: async (ctx) => {
+    return await twilio.list(ctx);
+  },
+});
 
 export const listIncoming = query({
-    args: {},
-    handler: async (ctx) => {
-        return await twilio.listIncoming(ctx);
-    }
-})
+  args: {},
+  handler: async (ctx) => {
+    return await twilio.listIncoming(ctx);
+  },
+});
 ```
