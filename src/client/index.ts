@@ -95,6 +95,7 @@ export default class Twilio {
   account_sid: string;
   auth_token: string;
   http_prefix: string;
+  default_from?: string;
 
   constructor(
     public componentApi: componentApiType,
@@ -102,6 +103,7 @@ export default class Twilio {
       account_sid?: string;
       auth_token?: string;
       http_prefix?: string;
+      default_from?: string;
     }
   ) {
     this.account_sid = options?.account_sid ?? process.env.TWILIO_ACCOUNT_SID!;
@@ -114,6 +116,7 @@ export default class Twilio {
       );
     }
     this.http_prefix = options?.http_prefix ?? "/twilio";
+    this.default_from = options?.default_from;
   }
 
   registerRoutes(http: HttpRouter) {
@@ -132,10 +135,13 @@ export default class Twilio {
 
   async sendMessage(
     ctx: RunActionCtx,
-    args: { from: string; to: string; body: string }
+    args: { from?: string; to: string; body: string }
   ) {
+    if (!args.from && !this.default_from) {
+      throw new Error("Missing from number");
+    }
     return ctx.runAction(this.componentApi.messages.create, {
-      from: args.from,
+      from: args.from ?? this.default_from!,
       to: args.to,
       body: args.body,
       account_sid: this.account_sid,

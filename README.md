@@ -49,7 +49,14 @@ Instantiate a Twilio Component client in a file in your app's `convex/` folder:
 import Twilio from "@convex-dev/twilio";
 import { components } from "./_generated/server.js";
 
-const twilio = new Twilio(components.twilio);
+const twilio = new Twilio(
+    components.twilio,
+    {
+        // optionally pass in the default "from" phone number you'll be using
+        // this must be a phone number you've created with Twilio
+        default_from: process.env.TWILIO_PHONE_NUMBER || "",
+    }
+);
 
 // export to be used everywhere in your /convex code
 export default twilio;
@@ -92,10 +99,7 @@ export const sendSms = internalAction({
     body: v.string(),
   },
   handler: async (ctx, args) => {
-    return await twilio.sendMessage(ctx, {
-      ...args,
-      from: "YOUR_TWILIO_PHONE_NUMBER",
-    });
+    return await twilio.sendMessage(ctx, args);
   },
 });
 ```

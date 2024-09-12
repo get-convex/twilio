@@ -8,10 +8,7 @@ export const sendSms = internalAction({
         body: v.string(),
     },
     handler: async (ctx, args) => {
-        return await twilio.sendMessage(ctx, {
-            ...args,
-            from: process.env.TWILIO_PHONE_NUMBER || "",
-        });
+        return await twilio.sendMessage(ctx, args);
     }
 })
 
