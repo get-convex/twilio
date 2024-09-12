@@ -51,6 +51,18 @@ type componentApiType = {
       { account_sid: string; },
       any
     >;
+    getBySid: FunctionReference<
+      "query",
+      "internal",
+      { sid: string },
+      any
+    >;
+    getIncomingMessageBySid: FunctionReference<
+      "query",
+      "internal",
+      { sid: string },
+      any
+    >;
     updateStatus: FunctionReference<
       "mutation",
       "internal",
@@ -174,6 +186,24 @@ export default class Twilio {
   ) {
     return ctx.runQuery(this.componentApi.messages.listIncoming, {
       account_sid: this.account_sid,
+    })
+  }
+
+  async getMessageBySid(
+    ctx: RunQueryCtx,
+    args: { sid: string }
+  ) {
+    return ctx.runQuery(this.componentApi.messages.getBySid, {
+      sid: args.sid,
+    })
+  }
+
+  async getIncomingMessageBySid(
+    ctx: RunQueryCtx,
+    args: { sid: string }
+  ) {
+    return ctx.runQuery(this.componentApi.messages.getIncomingMessageBySid, {
+      sid: args.sid,
     })
   }
 

@@ -166,6 +166,13 @@ export declare const components: {
         },
         any
       >;
+      getBySid: FunctionReference<"query", "internal", { sid: string }, any>;
+      getIncomingMessageBySid: FunctionReference<
+        "query",
+        "internal",
+        { sid: string },
+        any
+      >;
       insertIncoming: FunctionReference<
         "mutation",
         "internal",

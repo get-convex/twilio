@@ -32,7 +32,7 @@ declare const fullApi: ApiFromModules<{
   phone_numbers: typeof phone_numbers;
   utils: typeof utils;
 }>;
-declare const fullApiWithMounts: typeof fullApi & {
+export type Mounts = {
   messages: {
     create: FunctionReference<
       "action",
@@ -53,10 +53,11 @@ declare const fullApiWithMounts: typeof fullApi & {
       { message: any },
       any
     >;
-    list: FunctionReference<
-      "action",
+    list: FunctionReference<"query", "public", { account_sid: string }, any>;
+    listIncoming: FunctionReference<
+      "query",
       "public",
-      { account_sid: string; auth_token: string },
+      { account_sid: string },
       any
     >;
     updateStatus: FunctionReference<
@@ -81,6 +82,10 @@ declare const fullApiWithMounts: typeof fullApi & {
     >;
   };
 };
+// For now fullApiWithMounts is only fullApi which provides
+// jump-to-definition in component client code.
+// Use Mounts for the same type without the inference.
+declare const fullApiWithMounts: typeof fullApi;
 
 export declare const api: FilterApi<
   typeof fullApiWithMounts,

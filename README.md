@@ -161,3 +161,28 @@ export const listIncoming = query({
   },
 });
 ```
+
+To get a single message by its sid, use `getMessageBySid`:
+```ts
+
+export const getMessageBySid = query({
+    args: {
+        sid: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessageBySid(ctx, args);
+    }  
+})
+```
+
+To get a single incoming message by its sid, use `getIncomingMessageBySid`:
+```ts
+export const getIncomingMessageBySid = query({
+    args: {
+        sid: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getIncomingMessageBySid(ctx, args);
+    }
+})
+```
