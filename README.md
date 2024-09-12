@@ -186,3 +186,27 @@ export const getIncomingMessageBySid = query({
     }
 })
 ```
+
+Get messages by the "to" phone number:
+```ts
+export const getMessagesByTo = query({
+    args: {
+        to: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessagesByTo(ctx, args);
+    }
+})
+```
+
+Get incoming messages by the "from" phone number:
+```ts
+export const getIncomingMessagesByFrom = query({
+    args: {
+        from: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getIncomingMessagesByFrom(ctx, args);
+    }
+})
+``

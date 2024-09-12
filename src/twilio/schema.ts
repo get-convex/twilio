@@ -26,7 +26,8 @@ export default defineSchema({
     uri: v.string(),
   })
   .index("by_sid", ["sid"])
-  .index("by_account_sid", ["account_sid"]),
+  .index("by_account_sid", ["account_sid"])
+  .index("by_to", ["to"]),
 
   incoming_messages: defineTable({
     AccountSid: v.string(),
@@ -50,7 +51,8 @@ export default defineSchema({
     ToZip: v.string(),
   })
   .index("by_SmsSid", ["SmsSid"])
-  .index("by_AccountSid", ["AccountSid"]),
+  .index("by_AccountSid", ["AccountSid"])
+  .index("by_From", ["From"]),
 
   phone_numbers: defineTable({
     account_sid: v.string(),

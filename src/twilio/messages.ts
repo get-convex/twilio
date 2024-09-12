@@ -77,6 +77,28 @@ export const getIncomingMessageBySid = query({
     }
 })
 
+export const getByTo = query({
+    args: {
+        to: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.db.query("messages")
+            .withIndex("by_to", q => q.eq("to", args.to))
+            .collect();
+    }
+})
+
+export const getIncomingMessagesByFrom = query({
+    args: {
+        from: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.db.query("incoming_messages")
+            .withIndex("by_From", q => q.eq("From", args.from))
+            .collect();
+    }
+})
+
 export const updateStatus = mutation({
     args: {
         account_sid: v.string(),

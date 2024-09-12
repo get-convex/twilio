@@ -63,6 +63,18 @@ type componentApiType = {
       { sid: string },
       any
     >;
+    getByTo: FunctionReference<
+      "query",
+      "internal",
+      { to: string },
+      any
+    >;
+    getIncomingMessagesByFrom: FunctionReference<
+      "query",
+      "internal",
+      { from: string },
+      any
+    >;
     updateStatus: FunctionReference<
       "mutation",
       "internal",
@@ -206,6 +218,25 @@ export default class Twilio {
       sid: args.sid,
     })
   }
+
+  async getMessagesByTo(
+    ctx: RunQueryCtx,
+    args: { to: string }
+  ) {
+    return ctx.runQuery(this.componentApi.messages.getByTo, {
+      to: args.to,
+    })
+  }
+  
+  async getIncomingMessagesByFrom(
+    ctx: RunQueryCtx,
+    args: { from: string }
+  ) {
+    return ctx.runQuery(this.componentApi.messages.getIncomingMessagesByFrom, {
+      from: args.from,
+    })
+  }
+
 
   private updateMessageStatus = httpActionGeneric(async (ctx, request) => {
     const requestValues = new URLSearchParams(await request.text());
