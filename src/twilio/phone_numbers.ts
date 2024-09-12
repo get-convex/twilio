@@ -51,6 +51,19 @@ export const get = internalQuery({
     }
 })
 
+export const queryByPhoneNumber = internalQuery({
+    args: {
+        phone_number: v.string(),
+        account_sid: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.db.query("phone_numbers")
+        .withIndex("by_phone_number", q => q.eq("phone_number", args.phone_number))
+        .filter(q => q.eq(q.field("account_sid"), args.account_sid))
+        .first();
+    }
+})
+
 export const updateSmsUrl = action({
     args: {
         account_sid: v.string(),
@@ -75,5 +88,38 @@ export const updateSmsUrl = action({
         };
         const response = await twilioRequest(path, args.account_sid, args.auth_token, body, "POST");
         await ctx.runMutation(internal.phone_numbers.patch, { convexId, sms_url: args.sms_url });
+    }
+})
+
+export const getByPhoneNumber = action({
+    args: {
+        account_sid: v.string(),
+        auth_token: v.string(),
+        phone_number: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const phone_number: any = await ctx.runQuery(internal.phone_numbers.queryByPhoneNumber, {
+            phone_number: args.phone_number,
+            account_sid: args.account_sid,
+        });
+        if (!phone_number) {
+            console.log(`Phone number ${args.phone_number} not found in table - fetching from Twilio`);
+            const phone_number = encodeURIComponent(args.phone_number);
+            const path = `IncomingPhoneNumbers.json?PhoneNumber=${phone_number}`;
+            const data = await twilioRequest(path, args.account_sid, args.auth_token, {}, "GET");
+            if (data.incoming_phone_numbers.length === 0) {
+                throw new Error("Phone number not found");
+            }
+            console.log("Inserting phone number into table");
+            const id = await ctx.runMutation(
+                internal.phone_numbers.insert, 
+                { phone_number: data.incoming_phone_numbers[0] }
+            );
+            data.incoming_phone_numbers[0]._id = id;
+            return data.incoming_phone_numbers[0];
+        } else {
+            return phone_number;
+        }
+
     }
 })

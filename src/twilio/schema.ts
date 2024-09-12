@@ -96,5 +96,6 @@ export default defineSchema({
     voice_fallback_url: v.string(),
     voice_method: v.string(),
     voice_url: v.string(),
-  }),
+  })
+  .index("by_phone_number", ["phone_number"]),
 });

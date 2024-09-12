@@ -217,6 +217,12 @@ export declare const components: {
         { account_sid: string; auth_token: string; number: string },
         any
       >;
+      getByPhoneNumber: FunctionReference<
+        "action",
+        "internal",
+        { account_sid: string; auth_token: string; phone_number: string },
+        any
+      >;
       updateSmsUrl: FunctionReference<
         "action",
         "internal",

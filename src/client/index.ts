@@ -105,6 +105,12 @@ type componentApiType = {
       },
       any
     >;
+    getByPhoneNumber: FunctionReference<
+      "action",
+      "internal",
+      { account_sid: string; auth_token: string; phone_number: string },
+      any
+    >;
   };
 };
 
@@ -235,6 +241,20 @@ export default class Twilio {
     return ctx.runQuery(this.componentApi.messages.getIncomingMessagesByFrom, {
       from: args.from,
     })
+  }
+
+  async getDefaultPhoneNumber(
+    ctx: RunActionCtx,
+    args: { number?: string }
+  ) {
+    if (!args.number && !this.default_from) {
+      throw new Error("Missing from number");
+    }
+    return ctx.runAction(this.componentApi.phone_numbers.getByPhoneNumber, {
+      account_sid: this.account_sid,
+      auth_token: this.auth_token,
+      phone_number: args.number ?? this.default_from!,
+    });
   }
 
 
