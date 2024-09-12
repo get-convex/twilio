@@ -24,7 +24,9 @@ export default defineSchema({
     subresource_uris: v.object({ media: v.string() }),
     to: v.string(),
     uri: v.string(),
-  }).index("by_sid", ["sid"]),
+  })
+  .index("by_sid", ["sid"])
+  .index("by_account_sid", ["account_sid"]),
 
   incoming_messages: defineTable({
     AccountSid: v.string(),
@@ -46,7 +48,9 @@ export default defineSchema({
     ToCountry: v.string(),
     ToState: v.string(),
     ToZip: v.string(),
-  }).index("by_SmsSid", ["SmsSid"]),
+  })
+  .index("by_SmsSid", ["SmsSid"])
+  .index("by_AccountSid", ["AccountSid"]),
 
   phone_numbers: defineTable({
     account_sid: v.string(),

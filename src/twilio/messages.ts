@@ -39,7 +39,7 @@ export const list = query({
     },
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
-            .filter(q => q.eq(q.field("account_sid"), args.account_sid))
+            .withIndex("by_account_sid", q => q.eq("account_sid", args.account_sid))
             .collect();
     }
 })
@@ -50,7 +50,7 @@ export const listIncoming = query({
     },
     handler: async (ctx, args) => {
         return await ctx.db.query("incoming_messages")
-            .filter(q => q.eq(q.field("AccountSid"), args.account_sid))
+            .withIndex("by_AccountSid", q => q.eq("AccountSid", args.account_sid))
             .collect();
     }
 })
