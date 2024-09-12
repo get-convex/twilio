@@ -104,6 +104,8 @@ export const sendSms = internalAction({
 });
 ```
 
+By querying the message (see [below](#querying-messages)) you can check for the status ([Twilio Statuses](https://www.twilio.com/docs/messaging/api/message-resource#message-status-values)). The component subscribes to status updates and writes the most up-to-date status into the database.
+
 ## Receiving Messages
 
 To receive messages, you will associate a webhook handler provided by the component with the Twilio phone number you'd like to use.
