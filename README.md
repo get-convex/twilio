@@ -138,6 +138,22 @@ export const registerIncomingSmsHandler = internalAction({
 
 Now, incoming messages will be captured by the component and logged in the `incoming_messages` table.
 
+You can execute your own logic upon receiving an incoming message, by providing a callback when instantiating the Twilio Component client:
+```ts
+// convex/twilio.ts
+
+const twilio = new Twilio(
+    components.twilio,
+    {
+        default_from: process.env.TWILIO_PHONE_NUMBER || "",
+        incoming_message_callback: async (ctx, message) => {
+            // use ctx here to execute other Convex functions
+            console.log("Incoming message", message);
+        }
+    }
+);
+```
+
 ## Querying Messages
 
 To list all the mssages, use the `list` method of the `Twilio` class in your Convex function.

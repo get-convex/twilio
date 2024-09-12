@@ -121,11 +121,17 @@ type RunQueryCtx = {
   runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
 };
 
+type IncomingMessageHandler = (
+  ctx: GenericActionCtx<GenericDataModel>,
+  message: Record<string, string>,
+) => Promise<void>;
+
 export default class Twilio {
   account_sid: string;
   auth_token: string;
   http_prefix: string;
   default_from?: string;
+  incoming_message_callback?: IncomingMessageHandler;
 
   constructor(
     public componentApi: componentApiType,
@@ -134,6 +140,7 @@ export default class Twilio {
       auth_token?: string;
       http_prefix?: string;
       default_from?: string;
+      incoming_message_callback?: IncomingMessageHandler;
     }
   ) {
     this.account_sid = options?.account_sid ?? process.env.TWILIO_ACCOUNT_SID!;
@@ -147,6 +154,7 @@ export default class Twilio {
     }
     this.http_prefix = options?.http_prefix ?? "/twilio";
     this.default_from = options?.default_from;
+    this.incoming_message_callback = options?.incoming_message_callback;
   }
 
   registerRoutes(http: HttpRouter) {
@@ -287,6 +295,9 @@ export default class Twilio {
       message: record,
     });
 
+    if (this.incoming_message_callback) {
+      await this.incoming_message_callback(ctx, record);
+    }
     return new Response(null, { status: 200 });
   });
 }
