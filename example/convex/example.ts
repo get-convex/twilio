@@ -1,7 +1,9 @@
-import Twilio from "twilio_component";
 import { action, components } from "./_generated/server.js";
+import twilioClient from "twilio_component";
 
-const twilio = new Twilio(components.twilio);
+const twilio = twilioClient(components.twilio, {
+  default_from: process.env.TWILIO_PHONE_NUMBER!,
+});
 
 export default twilio;
 

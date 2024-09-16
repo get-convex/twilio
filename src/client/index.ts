@@ -34,162 +34,160 @@ type IncomingMessageHandler = (
   message: Record<string, string>
 ) => Promise<void>;
 
-export default class Twilio {
-  account_sid: string;
-  auth_token: string;
-  http_prefix: string;
-  default_from?: string;
-  incomingMessageCallback?: IncomingMessageHandler;
-
-  constructor(
-    public componentApi: componentApiType,
-    options?: {
-      TWILIO_ACCOUNT_SID?: string;
-      TWILIO_AUTH_TOKEN?: string;
-      TWILIO_PHONE_NUMBER?: string;
-      http_prefix?: string;
-      incomingMessageCallback?: IncomingMessageHandler;
-    }
-  ) {
-    this.account_sid =
-      options?.TWILIO_ACCOUNT_SID ?? process.env.TWILIO_ACCOUNT_SID!;
-    this.auth_token =
-      options?.TWILIO_AUTH_TOKEN ?? process.env.TWILIO_AUTH_TOKEN!;
-    if (!this.account_sid || !this.auth_token) {
-      throw new Error(
-        "Missing Twilio credentials\n\n" +
-          "npx convex env set TWILIO_ACCOUNT_SID=ACxxxxx\n" +
-          "npx convex env set TWILIO_AUTH_TOKEN=xxxxx"
-      );
-    }
-    this.http_prefix = options?.http_prefix ?? "/twilio";
-    this.default_from = options?.TWILIO_PHONE_NUMBER;
-    this.incomingMessageCallback = options?.incomingMessageCallback;
+export default function twilioClient<
+  From extends { default_from?: string } | Record<string, never>,
+>(
+  componentApi: componentApiType,
+  options?: {
+    TWILIO_ACCOUNT_SID?: string;
+    TWILIO_AUTH_TOKEN?: string;
+    http_prefix?: string;
+    incomingMessageCallback?: IncomingMessageHandler;
+  } & From
+) {
+  const account_sid =
+    options?.TWILIO_ACCOUNT_SID ?? process.env.TWILIO_ACCOUNT_SID!;
+  const auth_token =
+    options?.TWILIO_AUTH_TOKEN ?? process.env.TWILIO_AUTH_TOKEN!;
+  if (!account_sid || !auth_token) {
+    throw new Error(
+      "Missing Twilio credentials\n\n" +
+        "npx convex env set TWILIO_ACCOUNT_SID=ACxxxxx\n" +
+        "npx convex env set TWILIO_AUTH_TOKEN=xxxxx"
+    );
   }
+  const http_prefix = options?.http_prefix ?? "/twilio";
 
-  registerRoutes(http: HttpRouter) {
-    http.route({
-      path: this.http_prefix + "/message-status",
-      method: "POST",
-      handler: this.updateMessageStatus,
-    });
+  return {
+    registerRoutes(http: HttpRouter) {
+      http.route({
+        path: http_prefix + "/message-status",
+        method: "POST",
+        handler: httpActionGeneric(async (ctx, request) => {
+          const requestValues = new URLSearchParams(await request.text());
+          const sid = requestValues.get("MessageSid");
+          const status = requestValues.get("MessageStatus");
 
-    http.route({
-      path: this.http_prefix + "/incoming-message",
-      method: "POST",
-      handler: this.incomingMessage,
-    });
-  }
-
-  async sendMessage(
-    ctx: RunActionCtx,
-    args: { from?: string; to: string; body: string }
-  ) {
-    if (!args.from && !this.default_from) {
-      throw new Error("Missing from number");
-    }
-    return ctx.runAction(this.componentApi.messages.create, {
-      from: args.from ?? this.default_from!,
-      to: args.to,
-      body: args.body,
-      account_sid: this.account_sid,
-      auth_token: this.auth_token,
-      status_callback:
-        process.env.CONVEX_SITE_URL + this.http_prefix + "/message-status",
-    });
-  }
-
-  async registerIncomingSmsHandler(ctx: RunActionCtx, args: { sid: string }) {
-    return ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
-      account_sid: this.account_sid,
-      auth_token: this.auth_token,
-      sid: args.sid,
-      sms_url:
-        process.env.CONVEX_SITE_URL + this.http_prefix + "/incoming-message",
-    });
-  }
-
-  async list(ctx: RunQueryCtx) {
-    return ctx.runQuery(this.componentApi.messages.list, {
-      account_sid: this.account_sid,
-    });
-  }
-
-  async listIncoming(ctx: RunQueryCtx) {
-    return ctx.runQuery(this.componentApi.messages.listIncoming, {
-      account_sid: this.account_sid,
-    });
-  }
-
-  async getMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
-    return ctx.runQuery(this.componentApi.messages.getBySid, {
-      sid: args.sid,
-    });
-  }
-
-  async getIncomingMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
-    return ctx.runQuery(this.componentApi.messages.getIncomingMessageBySid, {
-      sid: args.sid,
-    });
-  }
-
-  async getMessagesByTo(ctx: RunQueryCtx, args: { to: string }) {
-    return ctx.runQuery(this.componentApi.messages.getByTo, {
-      to: args.to,
-    });
-  }
-
-  async getIncomingMessagesByFrom(ctx: RunQueryCtx, args: { from: string }) {
-    return ctx.runQuery(this.componentApi.messages.getIncomingMessagesByFrom, {
-      from: args.from,
-    });
-  }
-
-  async getDefaultPhoneNumber(ctx: RunActionCtx, args: { number?: string }) {
-    if (!args.number && !this.default_from) {
-      throw new Error("Missing from number");
-    }
-    return ctx.runAction(this.componentApi.phone_numbers.getByPhoneNumber, {
-      account_sid: this.account_sid,
-      auth_token: this.auth_token,
-      phone_number: args.number ?? this.default_from!,
-    });
-  }
-
-  private updateMessageStatus = httpActionGeneric(async (ctx, request) => {
-    const requestValues = new URLSearchParams(await request.text());
-    const sid = requestValues.get("MessageSid");
-    const status = requestValues.get("MessageStatus");
-
-    if (sid && status) {
-      await ctx.runMutation(this.componentApi.messages.updateStatus, {
-        account_sid: this.account_sid,
-        auth_token: this.auth_token,
-        sid: sid ?? "",
-        status: status ?? "",
+          if (sid && status) {
+            await ctx.runMutation(componentApi.messages.updateStatus, {
+              account_sid,
+              auth_token,
+              sid: sid ?? "",
+              status: status ?? "",
+            });
+          } else {
+            console.log(`Invalid request: ${requestValues}`);
+          }
+          return new Response(null, { status: 200 });
+        }),
       });
-    } else {
-      console.log(`Invalid request: ${requestValues}`);
-    }
-    return new Response(null, { status: 200 });
-  });
 
-  private incomingMessage = httpActionGeneric(async (ctx, request) => {
-    const requestValues = new URLSearchParams(await request.text());
-    console.log(requestValues);
-    const record: Record<string, string> = {};
-    requestValues.forEach((value, key) => {
-      record[key] = value;
-    });
-    await ctx.runMutation(this.componentApi.messages.insertIncoming, {
-      message: record,
-    });
+      http.route({
+        path: http_prefix + "/incoming-message",
+        method: "POST",
+        handler: httpActionGeneric(async (ctx, request) => {
+          const requestValues = new URLSearchParams(await request.text());
+          console.log(requestValues);
+          const record: Record<string, string> = {};
+          requestValues.forEach((value, key) => {
+            record[key] = value;
+          });
+          await ctx.runMutation(componentApi.messages.insertIncoming, {
+            message: record,
+          });
 
-    if (this.incomingMessageCallback) {
-      await this.incomingMessageCallback(ctx, record);
-    }
-    return new Response(null, { status: 200 });
-  });
+          if (options?.incomingMessageCallback) {
+            await options?.incomingMessageCallback(ctx, record);
+          }
+          return new Response(null, { status: 200 });
+        }),
+      });
+    },
+
+    async sendMessage(
+      ctx: RunActionCtx,
+      args: Expand<
+        { to: string; body: string } & (From["default_from"] extends string
+          ? { from?: string }
+          : { from: string })
+      >
+    ) {
+      if (!args.from && !options?.default_from) {
+        throw new Error("Missing from number");
+      }
+      return ctx.runAction(componentApi.messages.create, {
+        from: args.from ?? options!.default_from!,
+        to: args.to,
+        body: args.body,
+        account_sid,
+        auth_token,
+        status_callback:
+          process.env.CONVEX_SITE_URL + http_prefix + "/message-status",
+      });
+    },
+
+    async registerIncomingSmsHandler(ctx: RunActionCtx, args: { sid: string }) {
+      return ctx.runAction(componentApi.phone_numbers.updateSmsUrl, {
+        account_sid,
+        auth_token,
+        sid: args.sid,
+        sms_url:
+          process.env.CONVEX_SITE_URL + http_prefix + "/incoming-message",
+      });
+    },
+
+    async list(ctx: RunQueryCtx) {
+      return ctx.runQuery(componentApi.messages.list, {
+        account_sid,
+      });
+    },
+
+    async listIncoming(ctx: RunQueryCtx) {
+      return ctx.runQuery(componentApi.messages.listIncoming, {
+        account_sid,
+      });
+    },
+
+    async getMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
+      return ctx.runQuery(componentApi.messages.getBySid, {
+        sid: args.sid,
+      });
+    },
+
+    async getIncomingMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
+      return ctx.runQuery(componentApi.messages.getIncomingMessageBySid, {
+        sid: args.sid,
+      });
+    },
+
+    async getMessagesByTo(ctx: RunQueryCtx, args: { to: string }) {
+      return ctx.runQuery(componentApi.messages.getByTo, {
+        to: args.to,
+      });
+    },
+
+    async getIncomingMessagesByFrom(ctx: RunQueryCtx, args: { from: string }) {
+      return ctx.runQuery(componentApi.messages.getIncomingMessagesByFrom, {
+        from: args.from,
+      });
+    },
+
+    async getDefaultPhoneNumber(
+      ctx: RunActionCtx,
+      args: From["default_from"] extends string
+        ? { number?: string }
+        : { number: string }
+    ) {
+      if (!args.number && !options?.default_from) {
+        throw new Error("Missing from number");
+      }
+      return ctx.runAction(componentApi.phone_numbers.getByPhoneNumber, {
+        account_sid,
+        auth_token,
+        phone_number: args.number ?? options!.default_from!,
+      });
+    },
+  };
 }
 
 type UseApi<API> = Expand<{
