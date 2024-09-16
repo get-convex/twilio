@@ -1,6 +1,7 @@
 // This file is for thick component clients and helpers that run
 
 import {
+  Expand,
   FunctionReference,
   GenericActionCtx,
   GenericDataModel,
@@ -8,6 +9,7 @@ import {
   httpActionGeneric,
   HttpRouter,
 } from "convex/server";
+import { api } from "../twilio/_generated/api.js";
 // on the Convex backend.
 declare global {
   const Convex: Record<string, unknown>;
@@ -18,101 +20,7 @@ if (typeof Convex === "undefined") {
     "this is Convex backend code, but it's running somewhere else!"
   );
 }
-type componentApiType = {
-  messages: {
-    create: FunctionReference<
-      "action",
-      "internal",
-      {
-        account_sid: string;
-        auth_token: string;
-        body: string;
-        from: string;
-        status_callback: string;
-        to: string;
-      },
-      any
-    >;
-    insertIncoming: FunctionReference<
-      "mutation",
-      "internal",
-      { message: any },
-      any
-    >;
-    list: FunctionReference<
-      "query",
-      "internal",
-      { account_sid: string; },
-      any
-    >;
-    listIncoming: FunctionReference<
-      "query",
-      "internal",
-      { account_sid: string; },
-      any
-    >;
-    getBySid: FunctionReference<
-      "query",
-      "internal",
-      { sid: string },
-      any
-    >;
-    getIncomingMessageBySid: FunctionReference<
-      "query",
-      "internal",
-      { sid: string },
-      any
-    >;
-    getByTo: FunctionReference<
-      "query",
-      "internal",
-      { to: string },
-      any
-    >;
-    getIncomingMessagesByFrom: FunctionReference<
-      "query",
-      "internal",
-      { from: string },
-      any
-    >;
-    updateStatus: FunctionReference<
-      "mutation",
-      "internal",
-      {
-        account_sid: string;
-        auth_token: string;
-        sid: string;
-        status: string;
-      },
-      any
-    >;
-  };
-  phone_numbers: {
-    create: FunctionReference<
-      "action",
-      "internal",
-      { account_sid: string; auth_token: string; number: string },
-      any
-    >;
-    updateSmsUrl: FunctionReference<
-      "action",
-      "internal",
-      {
-        account_sid: string;
-        auth_token: string;
-        sid: string;
-        sms_url: string;
-      },
-      any
-    >;
-    getByPhoneNumber: FunctionReference<
-      "action",
-      "internal",
-      { account_sid: string; auth_token: string; phone_number: string },
-      any
-    >;
-  };
-};
+type componentApiType = UseApi<typeof api>;
 
 type RunActionCtx = {
   runAction: GenericActionCtx<GenericDataModel>["runAction"];
@@ -123,7 +31,7 @@ type RunQueryCtx = {
 
 type IncomingMessageHandler = (
   ctx: GenericActionCtx<GenericDataModel>,
-  message: Record<string, string>,
+  message: Record<string, string>
 ) => Promise<void>;
 
 export default class Twilio {
@@ -131,20 +39,22 @@ export default class Twilio {
   auth_token: string;
   http_prefix: string;
   default_from?: string;
-  incoming_message_callback?: IncomingMessageHandler;
+  incomingMessageCallback?: IncomingMessageHandler;
 
   constructor(
     public componentApi: componentApiType,
     options?: {
-      account_sid?: string;
-      auth_token?: string;
+      TWILIO_ACCOUNT_SID?: string;
+      TWILIO_AUTH_TOKEN?: string;
+      TWILIO_PHONE_NUMBER?: string;
       http_prefix?: string;
-      default_from?: string;
-      incoming_message_callback?: IncomingMessageHandler;
+      incomingMessageCallback?: IncomingMessageHandler;
     }
   ) {
-    this.account_sid = options?.account_sid ?? process.env.TWILIO_ACCOUNT_SID!;
-    this.auth_token = options?.auth_token ?? process.env.TWILIO_AUTH_TOKEN!;
+    this.account_sid =
+      options?.TWILIO_ACCOUNT_SID ?? process.env.TWILIO_ACCOUNT_SID!;
+    this.auth_token =
+      options?.TWILIO_AUTH_TOKEN ?? process.env.TWILIO_AUTH_TOKEN!;
     if (!this.account_sid || !this.auth_token) {
       throw new Error(
         "Missing Twilio credentials\n\n" +
@@ -153,8 +63,8 @@ export default class Twilio {
       );
     }
     this.http_prefix = options?.http_prefix ?? "/twilio";
-    this.default_from = options?.default_from;
-    this.incoming_message_callback = options?.incoming_message_callback;
+    this.default_from = options?.TWILIO_PHONE_NUMBER;
+    this.incomingMessageCallback = options?.incomingMessageCallback;
   }
 
   registerRoutes(http: HttpRouter) {
@@ -199,62 +109,43 @@ export default class Twilio {
     });
   }
 
-  async list(
-    ctx: RunQueryCtx,
-  ) {
+  async list(ctx: RunQueryCtx) {
     return ctx.runQuery(this.componentApi.messages.list, {
       account_sid: this.account_sid,
-    })
+    });
   }
 
-  async listIncoming(
-    ctx: RunQueryCtx,
-  ) {
+  async listIncoming(ctx: RunQueryCtx) {
     return ctx.runQuery(this.componentApi.messages.listIncoming, {
       account_sid: this.account_sid,
-    })
+    });
   }
 
-  async getMessageBySid(
-    ctx: RunQueryCtx,
-    args: { sid: string }
-  ) {
+  async getMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
     return ctx.runQuery(this.componentApi.messages.getBySid, {
       sid: args.sid,
-    })
+    });
   }
 
-  async getIncomingMessageBySid(
-    ctx: RunQueryCtx,
-    args: { sid: string }
-  ) {
+  async getIncomingMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
     return ctx.runQuery(this.componentApi.messages.getIncomingMessageBySid, {
       sid: args.sid,
-    })
+    });
   }
 
-  async getMessagesByTo(
-    ctx: RunQueryCtx,
-    args: { to: string }
-  ) {
+  async getMessagesByTo(ctx: RunQueryCtx, args: { to: string }) {
     return ctx.runQuery(this.componentApi.messages.getByTo, {
       to: args.to,
-    })
-  }
-  
-  async getIncomingMessagesByFrom(
-    ctx: RunQueryCtx,
-    args: { from: string }
-  ) {
-    return ctx.runQuery(this.componentApi.messages.getIncomingMessagesByFrom, {
-      from: args.from,
-    })
+    });
   }
 
-  async getDefaultPhoneNumber(
-    ctx: RunActionCtx,
-    args: { number?: string }
-  ) {
+  async getIncomingMessagesByFrom(ctx: RunQueryCtx, args: { from: string }) {
+    return ctx.runQuery(this.componentApi.messages.getIncomingMessagesByFrom, {
+      from: args.from,
+    });
+  }
+
+  async getDefaultPhoneNumber(ctx: RunActionCtx, args: { number?: string }) {
     if (!args.number && !this.default_from) {
       throw new Error("Missing from number");
     }
@@ -264,7 +155,6 @@ export default class Twilio {
       phone_number: args.number ?? this.default_from!,
     });
   }
-
 
   private updateMessageStatus = httpActionGeneric(async (ctx, request) => {
     const requestValues = new URLSearchParams(await request.text());
@@ -295,9 +185,21 @@ export default class Twilio {
       message: record,
     });
 
-    if (this.incoming_message_callback) {
-      await this.incoming_message_callback(ctx, record);
+    if (this.incomingMessageCallback) {
+      await this.incomingMessageCallback(ctx, record);
     }
     return new Response(null, { status: 200 });
   });
 }
+
+type UseApi<API> = Expand<{
+  [K in keyof API]: API[K] extends FunctionReference<
+    infer T,
+    "public",
+    infer A,
+    infer R,
+    infer P
+  >
+    ? FunctionReference<T, "internal", A, R, P>
+    : UseApi<API[K]>;
+}>;
