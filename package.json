@@ -1,5 +1,5 @@
 {
-  "name": "twilio_component",
+  "name": "@get-convex/twilio",
   "version": "0.0.5",
   "type": "module",
   "scripts": {
@@ -39,7 +39,7 @@
     }
   },
   "dependencies": {
-    "convex": "1.15.1-alpha.3"
+    "convex": "^1.16.0-alpha.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

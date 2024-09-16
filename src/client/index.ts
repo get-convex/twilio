@@ -9,7 +9,7 @@ import {
   httpActionGeneric,
   HttpRouter,
 } from "convex/server";
-import { api } from "../twilio/_generated/api.js";
+import { api } from "../component/_generated/api.js";
 // on the Convex backend.
 declare global {
   const Convex: Record<string, unknown>;

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internalAction, query } from "./_generated/server";
-import twilio from "./twilio";
+import twilio from "./example.js";
 
 export const sendSms = internalAction({
     args: {
