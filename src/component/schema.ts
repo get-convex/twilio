@@ -97,5 +97,5 @@ export default defineSchema({
     voice_method: v.string(),
     voice_url: v.string(),
   })
-  .index("by_phone_number", ["phone_number"]),
+  .index("by_phone_number", ["account_sid", "phone_number"]),
 });

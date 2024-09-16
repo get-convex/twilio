@@ -58,8 +58,10 @@ export const queryByPhoneNumber = internalQuery({
     },
     handler: async (ctx, args) => {
         return await ctx.db.query("phone_numbers")
-        .withIndex("by_phone_number", q => q.eq("phone_number", args.phone_number))
-        .filter(q => q.eq(q.field("account_sid"), args.account_sid))
+        .withIndex("by_phone_number", q =>q
+            .eq("account_sid", args.account_sid)
+            .eq("phone_number", args.phone_number)
+        )
         .first();
     }
 })
