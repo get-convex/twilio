@@ -146,7 +146,7 @@ const twilio = new Twilio(
     components.twilio,
     {
         default_from: process.env.TWILIO_PHONE_NUMBER || "",
-        incoming_message_callback: async (ctx, message) => {
+        incomingMessageCallback: async (ctx, message) => {
             // use ctx here to execute other Convex functions
             console.log("Incoming message", message);
         }
