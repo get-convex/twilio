@@ -152,14 +152,14 @@ export default function twilioClient<
       });
     },
 
-    async getMessagesByTo(ctx: RunQueryCtx, args: { to: string }) {
-      return ctx.runQuery(componentApi.messages.getByTo, {
+    async getMessagesTo(ctx: RunQueryCtx, args: { to: string }) {
+      return ctx.runQuery(componentApi.messages.getTo, {
         to: args.to,
       });
     },
 
-    async getIncomingMessagesByFrom(ctx: RunQueryCtx, args: { from: string }) {
-      return ctx.runQuery(componentApi.messages.getIncomingMessagesByFrom, {
+    async getMessagesFrom(ctx: RunQueryCtx, args: { from: string }) {
+      return ctx.runQuery(componentApi.messages.getFrom, {
         from: args.from,
       });
     },

@@ -201,19 +201,14 @@ export declare const components: {
         any
       >;
       getBySid: FunctionReference<"query", "internal", { sid: string }, any>;
-      getByTo: FunctionReference<"query", "internal", { to: string }, any>;
+      getFrom: FunctionReference<"query", "internal", { from: string }, any>;
       getFromTwilioBySidAndInsert: FunctionReference<
         "action",
         "internal",
         { account_sid: string; auth_token: string; sid: string },
         any
       >;
-      getIncomingMessagesByFrom: FunctionReference<
-        "query",
-        "internal",
-        { from: string },
-        any
-      >;
+      getTo: FunctionReference<"query", "internal", { to: string }, any>;
       list: FunctionReference<
         "query",
         "internal",
@@ -221,6 +216,12 @@ export declare const components: {
         any
       >;
       listIncoming: FunctionReference<
+        "query",
+        "internal",
+        { account_sid: string },
+        any
+      >;
+      listOutgoing: FunctionReference<
         "query",
         "internal",
         { account_sid: string },

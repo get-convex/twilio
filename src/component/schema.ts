@@ -29,6 +29,7 @@ export default defineSchema({
   .index("by_account_sid", ["account_sid"])
   .index("by_account_sid_and_direction", ["account_sid", "direction"])
   .index("by_to", ["to"])
+  .index("by_from", ["from"])
   .index("by_from_and_direction", ["from", "direction"]),
 
   phone_numbers: defineTable({
