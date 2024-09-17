@@ -29,6 +29,7 @@ export const insert = internalMutation({
         message: v.any(),
     },
     handler: async (ctx, args) => {
+        args.message.counterparty = args.message.direction === "inbound" ? args.message.from : args.message.to;
         return await ctx.db.insert("messages", args.message);
     }
 })
@@ -100,6 +101,17 @@ export const getFrom = query({
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
             .withIndex("by_from", q => q.eq("from", args.from))
+            .collect();
+    }
+})
+
+export const getByCounterparty = query({
+    args: {
+        counterparty: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.db.query("messages")
+            .withIndex("by_counterparty", q => q.eq("counterparty", args.counterparty))
             .collect();
     }
 })

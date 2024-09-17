@@ -7,6 +7,7 @@ export default defineSchema({
     account_sid: v.string(),
     api_version: v.string(),
     body: v.string(),
+    counterparty: v.optional(v.string()),
     date_created: v.string(),
     date_sent: v.union(v.string(), v.null()),
     date_updated: v.union(v.string(), v.null()),
@@ -30,7 +31,8 @@ export default defineSchema({
   .index("by_account_sid_and_direction", ["account_sid", "direction"])
   .index("by_to", ["to"])
   .index("by_from", ["from"])
-  .index("by_from_and_direction", ["from", "direction"]),
+  .index("by_from_and_direction", ["from", "direction"])
+  .index("by_counterparty", ["counterparty"]),
 
   phone_numbers: defineTable({
     account_sid: v.string(),
