@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { action, internalMutation, internalQuery, mutation } from "./_generated/server.js";
+import { action, internalAction, internalMutation, internalQuery, mutation } from "./_generated/server.js";
 import { api, internal } from "./_generated/api.js";
 import { twilioRequest } from "./utils.js";
 
@@ -93,7 +93,7 @@ export const updateSmsUrl = action({
     }
 })
 
-export const getByPhoneNumber = action({
+export const getByPhoneNumber = internalAction({
     args: {
         account_sid: v.string(),
         auth_token: v.string(),

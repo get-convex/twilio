@@ -178,22 +178,6 @@ export default function twilioClient<
         counterparty: args.counterparty,
       });
     },
-
-    async getDefaultPhoneNumber(
-      ctx: RunActionCtx,
-      args: From["default_from"] extends string
-        ? { number?: string }
-        : { number: string }
-    ) {
-      if (!args.number && !options?.default_from) {
-        throw new Error("Missing from number");
-      }
-      return ctx.runAction(componentApi.phone_numbers.getByPhoneNumber, {
-        account_sid,
-        auth_token,
-        phone_number: args.number ?? options!.default_from!,
-      });
-    },
   };
 }
 
