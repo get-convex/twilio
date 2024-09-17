@@ -172,6 +172,13 @@ export default function twilioClient<
       });
     },
 
+    async getMessagesByCounterparty(ctx: RunQueryCtx, args: { counterparty: string }) {
+      return ctx.runQuery(componentApi.messages.getByCounterparty, {
+        account_sid,
+        counterparty: args.counterparty,
+      });
+    },
+
     async getDefaultPhoneNumber(
       ctx: RunActionCtx,
       args: From["default_from"] extends string

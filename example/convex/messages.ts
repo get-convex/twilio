@@ -33,6 +33,13 @@ export const listIncoming = query({
     }
 })
 
+export const listOutgoing = query({
+    args: {},
+    handler: async (ctx) => {
+        return await twilio.listOutgoing(ctx);
+    }
+})
+
 export const getMessageBySid = query({
     args: {
         sid: v.string(),
@@ -57,5 +64,14 @@ export const getMessagesFrom = query({
     },
     handler: async (ctx, args) => {
         return await twilio.getMessagesFrom(ctx, args);
+    }
+})
+
+export const getMessagesByCounterparty = query({
+    args: {
+        counterparty: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessagesByCounterparty(ctx, args);
     }
 })
