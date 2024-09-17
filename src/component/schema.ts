@@ -31,7 +31,6 @@ export default defineSchema({
   .index("by_account_sid_and_direction", ["account_sid", "direction"])
   .index("by_to", ["account_sid", "to"])
   .index("by_from", ["account_sid", "from"])
-  .index("by_from_and_direction", ["from", "direction"])
   .index("by_counterparty", ["account_sid", "counterparty"]),
 
   phone_numbers: defineTable({
