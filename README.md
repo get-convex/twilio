@@ -136,7 +136,7 @@ export const registerIncomingSmsHandler = internalAction({
 });
 ```
 
-Now, incoming messages will be captured by the component and logged in the `incoming_messages` table.
+Now, incoming messages will be captured by the component and logged in the `messages` table.
 
 You can execute your own logic upon receiving an incoming message, by providing a callback when instantiating the Twilio Component client:
 ```ts
@@ -193,17 +193,6 @@ export const getMessageBySid = query({
 })
 ```
 
-To get a single incoming message by its sid, use `getIncomingMessageBySid`:
-```ts
-export const getIncomingMessageBySid = query({
-    args: {
-        sid: v.string(),
-    },
-    handler: async (ctx, args) => {
-        return await twilio.getIncomingMessageBySid(ctx, args);
-    }
-})
-```
 
 Get messages by the "to" phone number:
 ```ts

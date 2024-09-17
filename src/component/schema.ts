@@ -27,32 +27,9 @@ export default defineSchema({
   })
   .index("by_sid", ["sid"])
   .index("by_account_sid", ["account_sid"])
-  .index("by_to", ["to"]),
-
-  incoming_messages: defineTable({
-    AccountSid: v.string(),
-    ApiVersion: v.string(),
-    Body: v.string(),
-    From: v.string(),
-    FromCity: v.string(),
-    FromCountry: v.string(),
-    FromState: v.string(),
-    FromZip: v.string(),
-    MessageSid: v.string(),
-    NumMedia: v.string(),
-    NumSegments: v.string(),
-    SmsMessageSid: v.string(),
-    SmsSid: v.string(),
-    SmsStatus: v.string(),
-    To: v.string(),
-    ToCity: v.string(),
-    ToCountry: v.string(),
-    ToState: v.string(),
-    ToZip: v.string(),
-  })
-  .index("by_SmsSid", ["SmsSid"])
-  .index("by_AccountSid", ["AccountSid"])
-  .index("by_From", ["From"]),
+  .index("by_account_sid_and_direction", ["account_sid", "direction"])
+  .index("by_to", ["to"])
+  .index("by_from_and_direction", ["from", "direction"]),
 
   phone_numbers: defineTable({
     account_sid: v.string(),

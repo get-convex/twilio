@@ -208,22 +208,10 @@ export declare const components: {
         { account_sid: string; auth_token: string; sid: string },
         any
       >;
-      getIncomingMessageBySid: FunctionReference<
-        "query",
-        "internal",
-        { sid: string },
-        any
-      >;
       getIncomingMessagesByFrom: FunctionReference<
         "query",
         "internal",
         { from: string },
-        any
-      >;
-      insertIncoming: FunctionReference<
-        "mutation",
-        "internal",
-        { message: any },
         any
       >;
       list: FunctionReference<

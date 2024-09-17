@@ -49,8 +49,11 @@ export const listIncoming = query({
         account_sid: v.string(),
     },
     handler: async (ctx, args) => {
-        return await ctx.db.query("incoming_messages")
-            .withIndex("by_AccountSid", q => q.eq("AccountSid", args.account_sid))
+        return await ctx.db.query("messages")
+            .withIndex("by_account_sid_and_direction", q => q
+                .eq("account_sid", args.account_sid)
+                .eq("direction", "inbound")
+            )
             .collect();
     }
 })
@@ -62,17 +65,6 @@ export const getBySid = query({
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
             .withIndex("by_sid", q => q.eq("sid", args.sid))
-            .first();
-    }
-})
-
-export const getIncomingMessageBySid = query({
-    args: {
-        sid: v.string(),
-    },
-    handler: async (ctx, args) => {
-        return await ctx.db.query("incoming_messages")
-            .withIndex("by_SmsSid", q => q.eq("SmsSid", args.sid))
             .first();
     }
 })
@@ -93,8 +85,11 @@ export const getIncomingMessagesByFrom = query({
         from: v.string(),
     },
     handler: async (ctx, args) => {
-        return await ctx.db.query("incoming_messages")
-            .withIndex("by_From", q => q.eq("From", args.from))
+        return await ctx.db.query("messages")
+            .withIndex("by_from_and_direction", q => q
+                .eq("from", args.from)
+                .eq("direction", "inbound")
+            )
             .collect();
     }
 })

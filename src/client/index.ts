@@ -152,12 +152,6 @@ export default function twilioClient<
       });
     },
 
-    async getIncomingMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
-      return ctx.runQuery(componentApi.messages.getIncomingMessageBySid, {
-        sid: args.sid,
-      });
-    },
-
     async getMessagesByTo(ctx: RunQueryCtx, args: { to: string }) {
       return ctx.runQuery(componentApi.messages.getByTo, {
         to: args.to,
