@@ -71,7 +71,6 @@ export default function twilioClient<
           if (sid && status) {
             await ctx.runMutation(componentApi.messages.updateStatus, {
               account_sid,
-              auth_token,
               sid: sid ?? "",
               status: status ?? "",
             });
@@ -146,20 +145,29 @@ export default function twilioClient<
       });
     },
 
+    async listOutgoing(ctx: RunQueryCtx) {
+      return ctx.runQuery(componentApi.messages.listOutgoing, {
+        account_sid,
+      });
+    },
+
     async getMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
       return ctx.runQuery(componentApi.messages.getBySid, {
+        account_sid,
         sid: args.sid,
       });
     },
 
     async getMessagesTo(ctx: RunQueryCtx, args: { to: string }) {
       return ctx.runQuery(componentApi.messages.getTo, {
+        account_sid,
         to: args.to,
       });
     },
 
     async getMessagesFrom(ctx: RunQueryCtx, args: { from: string }) {
       return ctx.runQuery(componentApi.messages.getFrom, {
+        account_sid,
         from: args.from,
       });
     },

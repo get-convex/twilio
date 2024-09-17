@@ -26,13 +26,13 @@ export default defineSchema({
     to: v.string(),
     uri: v.string(),
   })
-  .index("by_sid", ["sid"])
+  .index("by_sid", ["account_sid", "sid"])
   .index("by_account_sid", ["account_sid"])
   .index("by_account_sid_and_direction", ["account_sid", "direction"])
-  .index("by_to", ["to"])
-  .index("by_from", ["from"])
+  .index("by_to", ["account_sid", "to"])
+  .index("by_from", ["account_sid", "from"])
   .index("by_from_and_direction", ["from", "direction"])
-  .index("by_counterparty", ["counterparty"]),
+  .index("by_counterparty", ["account_sid", "counterparty"]),
 
   phone_numbers: defineTable({
     account_sid: v.string(),

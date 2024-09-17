@@ -74,44 +74,60 @@ export const listOutgoing = query({
 
 export const getBySid = query({
     args: {
+        account_sid: v.string(),
         sid: v.string(),
     },
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
-            .withIndex("by_sid", q => q.eq("sid", args.sid))
+            .withIndex("by_sid", q => q
+                .eq("account_sid", args.account_sid)
+                .eq("sid", args.sid)
+            )
             .first();
     }
 })
 
 export const getTo = query({
     args: {
+        account_sid: v.string(),
         to: v.string(),
     },
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
-            .withIndex("by_to", q => q.eq("to", args.to))
+            .withIndex("by_to", q => q
+                .eq("account_sid", args.account_sid)
+                .eq("to", args.to)
+            )
             .collect();
     }
 })
 
 export const getFrom = query({
     args: {
+        account_sid: v.string(),
         from: v.string(),
     },
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
-            .withIndex("by_from", q => q.eq("from", args.from))
+            .withIndex("by_from", q => q
+                .eq("account_sid", args.account_sid)
+                .eq("from", args.from)
+            )
             .collect();
     }
 })
 
 export const getByCounterparty = query({
     args: {
+        account_sid: v.string(),
         counterparty: v.string(),
     },
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
-            .withIndex("by_counterparty", q => q.eq("counterparty", args.counterparty))
+            .withIndex("by_counterparty", q => q
+                .eq("account_sid", args.account_sid)
+                .eq("counterparty", args.counterparty)
+            )
             .collect();
     }
 })
@@ -119,13 +135,15 @@ export const getByCounterparty = query({
 export const updateStatus = mutation({
     args: {
         account_sid: v.string(),
-        auth_token: v.string(),
         sid: v.string(),
         status: v.string(),
     },
     handler: async (ctx, args) => {
         const message = await ctx.db.query("messages")
-        .filter(q => q.eq(q.field("sid"), args.sid))
+        .withIndex("by_sid", q => q
+            .eq("account_sid", args.account_sid)
+            .eq("sid", args.sid)
+        )
         .first();
         if (!message) {
             throw new Error("Message not found");

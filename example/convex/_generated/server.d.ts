@@ -200,15 +200,36 @@ export declare const components: {
         },
         any
       >;
-      getBySid: FunctionReference<"query", "internal", { sid: string }, any>;
-      getFrom: FunctionReference<"query", "internal", { from: string }, any>;
+      getByCounterparty: FunctionReference<
+        "query",
+        "internal",
+        { account_sid: string; counterparty: string },
+        any
+      >;
+      getBySid: FunctionReference<
+        "query",
+        "internal",
+        { account_sid: string; sid: string },
+        any
+      >;
+      getFrom: FunctionReference<
+        "query",
+        "internal",
+        { account_sid: string; from: string },
+        any
+      >;
       getFromTwilioBySidAndInsert: FunctionReference<
         "action",
         "internal",
         { account_sid: string; auth_token: string; sid: string },
         any
       >;
-      getTo: FunctionReference<"query", "internal", { to: string }, any>;
+      getTo: FunctionReference<
+        "query",
+        "internal",
+        { account_sid: string; to: string },
+        any
+      >;
       list: FunctionReference<
         "query",
         "internal",
@@ -230,12 +251,7 @@ export declare const components: {
       updateStatus: FunctionReference<
         "mutation",
         "internal",
-        {
-          account_sid: string;
-          auth_token: string;
-          sid: string;
-          status: string;
-        },
+        { account_sid: string; sid: string; status: string },
         any
       >;
     };
