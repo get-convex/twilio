@@ -117,12 +117,21 @@ export const updateStatus = mutation({
     }
 })
 
-export const insertIncoming = mutation({
+export const getFromTwilioBySidAndInsert = action({
     args: {
-        message: v.any(),
+        account_sid: v.string(),
+        auth_token: v.string(),
+        sid: v.string(),
     },
     handler: async (ctx, args) => {
-        console.log("hello");
-        return await ctx.db.insert("incoming_messages", args.message);
+        const message = await twilioRequest(
+            `Messages/${args.sid}.json`,
+            args.account_sid,
+            args.auth_token,
+            {},
+            "GET"
+        );
+        message._id = await ctx.runMutation(internal.messages.insert, { message });
+        return message;
     }
 })

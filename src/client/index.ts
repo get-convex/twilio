@@ -88,16 +88,14 @@ export default function twilioClient<
         handler: httpActionGeneric(async (ctx, request) => {
           const requestValues = new URLSearchParams(await request.text());
           console.log(requestValues);
-          const record: Record<string, string> = {};
-          requestValues.forEach((value, key) => {
-            record[key] = value;
-          });
-          await ctx.runMutation(componentApi.messages.insertIncoming, {
-            message: record,
+          const message = await ctx.runAction(componentApi.messages.getFromTwilioBySidAndInsert, {
+            account_sid,
+            auth_token,
+            sid: requestValues.get("SmsSid") ?? "",
           });
 
           if (options?.incomingMessageCallback) {
-            await options?.incomingMessageCallback(ctx, record);
+            await options?.incomingMessageCallback(ctx, message);
           }
           return new Response(null, { status: 200 });
         }),
