@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { action, internalAction, internalMutation, internalQuery, mutation } from "./_generated/server.js";
 import { api, internal } from "./_generated/api.js";
 import { twilioRequest } from "./utils.js";
+import schema from "./schema.js";
 
 export const create = action({
     args: {
@@ -25,6 +26,7 @@ export const insert = internalMutation({
     args: {
         phone_number: v.any(),
     },
+    returns: v.id("phone_numbers"),
     handler: async (ctx, args) => {
         return await ctx.db.insert("phone_numbers", args.phone_number);
     }
@@ -42,11 +44,20 @@ export const patch = internalMutation({
 
 export const get = internalQuery({
     args: {
+        account_sid: v.string(),
         sid: v.string(),
     },
+    returns: v.union(
+        v.object({
+            ...schema.tables.phone_numbers.validator.fields,
+            _id: v.id("phone_numbers"),
+            _creationTime: v.number(),
+        }), 
+        v.null()
+    ),
     handler: async (ctx, args) => {
         return await ctx.db.query("phone_numbers")
-        .filter(q => q.eq(q.field("sid"), args.sid))
+        .withIndex("by_sid", q => q.eq("account_sid", args.account_sid).eq("sid", args.sid))
         .first();
     }
 })
@@ -56,6 +67,14 @@ export const queryByPhoneNumber = internalQuery({
         phone_number: v.string(),
         account_sid: v.string(),
     },
+    returns: v.union(
+        v.object({
+            ...schema.tables.phone_numbers.validator.fields,
+            _id: v.id("phone_numbers"),
+            _creationTime: v.number(),
+        }), 
+        v.null()
+    ),
     handler: async (ctx, args) => {
         return await ctx.db.query("phone_numbers")
         .withIndex("by_phone_number", q =>q
@@ -75,7 +94,11 @@ export const updateSmsUrl = action({
     },
     handler: async (ctx, args) => {
         const path = `IncomingPhoneNumbers/${args.sid}.json`;
-        const phone_number = await ctx.runQuery(internal.phone_numbers.get, { sid: args.sid });
+        const phone_number = await ctx.runQuery(
+            internal.phone_numbers.get, { 
+                sid: args.sid, account_sid: args.account_sid
+            }
+        );
         let convexId;
         if (!phone_number) {
             console.log("Phone number not found in table - fetching from Twilio");
@@ -99,6 +122,12 @@ export const getByPhoneNumber = internalAction({
         auth_token: v.string(),
         phone_number: v.string(),
     },
+    returns:
+    v.object({
+        ...schema.tables.phone_numbers.validator.fields,
+        _id: v.id("phone_numbers"),
+        _creationTime: v.number(),
+    }),
     handler: async (ctx, args) => {
         const phone_number: any = await ctx.runQuery(internal.phone_numbers.queryByPhoneNumber, {
             phone_number: args.phone_number,

@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { action, internalMutation, mutation, query } from "./_generated/server.js";
 import { internal } from "./_generated/api.js";
 import { twilioRequest } from "./utils.js";
+import schema from "./schema.js";
 
 export const create = action({
     args: {
@@ -28,6 +29,7 @@ export const insert = internalMutation({
     args: {
         message: v.any(),
     },
+    returns: v.id("messages"),
     handler: async (ctx, args) => {
         args.message.counterparty = args.message.direction === "inbound" ? args.message.from : args.message.to;
         return await ctx.db.insert("messages", args.message);
@@ -38,10 +40,16 @@ export const list = query({
     args: {
         account_sid: v.string(),
     },
+    returns: v.array(v.object({
+        ...schema.tables.messages.validator.fields,
+        _id: v.id("messages"),
+        _creationTime: v.number(),
+    })),
     handler: async (ctx, args) => {
-        return await ctx.db.query("messages")
+        const messages = await ctx.db.query("messages")
             .withIndex("by_account_sid", q => q.eq("account_sid", args.account_sid))
             .collect();
+        return messages;
     }
 })
 
@@ -49,6 +57,11 @@ export const listIncoming = query({
     args: {
         account_sid: v.string(),
     },
+    returns: v.array(v.object({
+        ...schema.tables.messages.validator.fields,
+        _id: v.id("messages"),
+        _creationTime: v.number(),
+    })),
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
             .withIndex("by_account_sid_and_direction", q => q
@@ -62,6 +75,11 @@ export const listOutgoing = query({
     args: {
         account_sid: v.string(),
     },
+    returns: v.array(v.object({
+        ...schema.tables.messages.validator.fields,
+        _id: v.id("messages"),
+        _creationTime: v.number(),
+    })),
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
             .withIndex("by_account_sid_and_direction", q => q
@@ -77,6 +95,14 @@ export const getBySid = query({
         account_sid: v.string(),
         sid: v.string(),
     },
+    returns: v.union(
+        v.object({
+            ...schema.tables.messages.validator.fields,
+            _id: v.id("messages"),
+            _creationTime: v.number(),
+        }),
+        v.null()
+    ),
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
             .withIndex("by_sid", q => q
@@ -92,6 +118,11 @@ export const getTo = query({
         account_sid: v.string(),
         to: v.string(),
     },
+    returns: v.array(v.object({
+        ...schema.tables.messages.validator.fields,
+        _id: v.id("messages"),
+        _creationTime: v.number(),
+    })),
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
             .withIndex("by_to", q => q
@@ -107,6 +138,11 @@ export const getFrom = query({
         account_sid: v.string(),
         from: v.string(),
     },
+    returns: v.array(v.object({
+        ...schema.tables.messages.validator.fields,
+        _id: v.id("messages"),
+        _creationTime: v.number(),
+    })),
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
             .withIndex("by_from", q => q
@@ -122,6 +158,11 @@ export const getByCounterparty = query({
         account_sid: v.string(),
         counterparty: v.string(),
     },
+    returns: v.array(v.object({
+        ...schema.tables.messages.validator.fields,
+        _id: v.id("messages"),
+        _creationTime: v.number(),
+    })),
     handler: async (ctx, args) => {
         return await ctx.db.query("messages")
             .withIndex("by_counterparty", q => q
@@ -158,6 +199,11 @@ export const getFromTwilioBySidAndInsert = action({
         auth_token: v.string(),
         sid: v.string(),
     },
+    returns: v.object({
+        ...schema.tables.messages.validator.fields,
+        _id: v.id("messages"),
+        _creationTime: v.number(),
+    }),
     handler: async (ctx, args) => {
         const message = await twilioRequest(
             `Messages/${args.sid}.json`,

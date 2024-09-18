@@ -10,6 +10,7 @@ import {
   HttpRouter,
 } from "convex/server";
 import { api } from "../component/_generated/api.js";
+import { GenericId } from "convex/values";
 // on the Convex backend.
 declare global {
   const Convex: Record<string, unknown>;
@@ -181,14 +182,29 @@ export default function twilioClient<
   };
 }
 
-type UseApi<API> = Expand<{
-  [K in keyof API]: API[K] extends FunctionReference<
-    infer T,
+export type OpaqueIds<T> =
+  T extends GenericId<infer _T>
+    ? string
+    : T extends (infer U)[]
+      ? OpaqueIds<U>[]
+      : T extends object
+        ? { [K in keyof T]: OpaqueIds<T[K]> }
+        : T;
+
+export type UseApi<API> = Expand<{
+  [mod in keyof API]: API[mod] extends FunctionReference<
+    infer FType,
     "public",
-    infer A,
-    infer R,
-    infer P
+    infer FArgs,
+    infer FReturnType,
+    infer FComponentPath
   >
-    ? FunctionReference<T, "internal", A, R, P>
-    : UseApi<API[K]>;
+    ? FunctionReference<
+        FType,
+        "internal",
+        OpaqueIds<FArgs>,
+        OpaqueIds<FReturnType>,
+        FComponentPath
+      >
+    : UseApi<API[mod]>;
 }>;
