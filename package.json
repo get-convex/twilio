@@ -1,6 +1,6 @@
 {
-  "name": "twilio_component",
-  "version": "0.0.5",
+  "name": "@get-convex/twilio",
+  "version": "0.0.6",
   "type": "module",
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs",
@@ -20,27 +20,26 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
+        "@convex-dev/component-source": "./src/client/index.ts",
         "types": "./dist/esm/client/index.d.ts",
         "default": "./dist/esm/client/index.js"
       },
       "require": {
+        "@convex-dev/component-source": "./src/client/index.ts",
         "types": "./dist/commonjs/client/index.d.ts",
         "default": "./dist/commonjs/client/index.js"
       }
     },
     "./convex.config.js": {
       "import": {
-        "types": "./dist/esm/twilio/convex.config.d.ts",
-        "default": "./dist/esm/twilio/convex.config.js"
-      },
-      "require": {
-        "types": "./dist/commonjs/twilio/convex.config.d.ts",
-        "default": "./dist/commonjs/twilio/convex.config.js"
+        "@convex-dev/component-source": "./src/component/convex.config.ts",
+        "types": "./dist/esm/component/convex.config.d.ts",
+        "default": "./dist/esm/component/convex.config.js"
       }
     }
   },
   "dependencies": {
-    "convex": "1.15.1-alpha.3"
+    "convex": "^1.16.0-alpha.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

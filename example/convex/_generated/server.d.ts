@@ -152,6 +152,40 @@ export type DatabaseWriter = GenericDatabaseWriter<DataModel>;
 
 export declare const components: {
   twilio: {
+    index: {
+      checkRateLimit: FunctionReference<
+        "query",
+        "internal",
+        {
+          count?: number;
+          key?: string;
+          name: string;
+          name2: string;
+          reserve?: boolean;
+          throws?: boolean;
+        },
+        { ok: boolean; retryAt?: number; ts?: number; value?: number }
+      >;
+      rateLimit: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          count?: number;
+          key?: string;
+          name: string;
+          name2: string;
+          reserve?: boolean;
+          throws?: boolean;
+        },
+        { ok: boolean; retryAt?: number }
+      >;
+      resetRateLimit: FunctionReference<
+        "mutation",
+        "internal",
+        { key?: string; name: string },
+        any
+      >;
+    };
     messages: {
       create: FunctionReference<
         "action",
@@ -166,33 +200,250 @@ export declare const components: {
         },
         any
       >;
-      insertIncoming: FunctionReference<
-        "mutation",
+      getByCounterparty: FunctionReference<
+        "query",
         "internal",
-        { message: any },
-        any
+        { account_sid: string; counterparty: string },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          account_sid: string;
+          api_version: string;
+          body: string;
+          counterparty?: string;
+          date_created: string;
+          date_sent: string | null;
+          date_updated: string | null;
+          direction: string;
+          error_code: number | null;
+          error_message: string | null;
+          from: string;
+          messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
+          sid: string;
+          status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
+          to: string;
+          uri: string;
+        }>
+      >;
+      getBySid: FunctionReference<
+        "query",
+        "internal",
+        { account_sid: string; sid: string },
+        {
+          _creationTime: number;
+          _id: string;
+          account_sid: string;
+          api_version: string;
+          body: string;
+          counterparty?: string;
+          date_created: string;
+          date_sent: string | null;
+          date_updated: string | null;
+          direction: string;
+          error_code: number | null;
+          error_message: string | null;
+          from: string;
+          messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
+          sid: string;
+          status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
+          to: string;
+          uri: string;
+        } | null
+      >;
+      getFrom: FunctionReference<
+        "query",
+        "internal",
+        { account_sid: string; from: string },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          account_sid: string;
+          api_version: string;
+          body: string;
+          counterparty?: string;
+          date_created: string;
+          date_sent: string | null;
+          date_updated: string | null;
+          direction: string;
+          error_code: number | null;
+          error_message: string | null;
+          from: string;
+          messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
+          sid: string;
+          status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
+          to: string;
+          uri: string;
+        }>
+      >;
+      getFromTwilioBySidAndInsert: FunctionReference<
+        "action",
+        "internal",
+        { account_sid: string; auth_token: string; sid: string },
+        {
+          _creationTime: number;
+          _id: string;
+          account_sid: string;
+          api_version: string;
+          body: string;
+          counterparty?: string;
+          date_created: string;
+          date_sent: string | null;
+          date_updated: string | null;
+          direction: string;
+          error_code: number | null;
+          error_message: string | null;
+          from: string;
+          messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
+          sid: string;
+          status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
+          to: string;
+          uri: string;
+        }
+      >;
+      getTo: FunctionReference<
+        "query",
+        "internal",
+        { account_sid: string; to: string },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          account_sid: string;
+          api_version: string;
+          body: string;
+          counterparty?: string;
+          date_created: string;
+          date_sent: string | null;
+          date_updated: string | null;
+          direction: string;
+          error_code: number | null;
+          error_message: string | null;
+          from: string;
+          messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
+          sid: string;
+          status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
+          to: string;
+          uri: string;
+        }>
       >;
       list: FunctionReference<
         "query",
         "internal",
         { account_sid: string },
-        any
+        Array<{
+          _creationTime: number;
+          _id: string;
+          account_sid: string;
+          api_version: string;
+          body: string;
+          counterparty?: string;
+          date_created: string;
+          date_sent: string | null;
+          date_updated: string | null;
+          direction: string;
+          error_code: number | null;
+          error_message: string | null;
+          from: string;
+          messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
+          sid: string;
+          status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
+          to: string;
+          uri: string;
+        }>
       >;
       listIncoming: FunctionReference<
         "query",
         "internal",
         { account_sid: string },
-        any
+        Array<{
+          _creationTime: number;
+          _id: string;
+          account_sid: string;
+          api_version: string;
+          body: string;
+          counterparty?: string;
+          date_created: string;
+          date_sent: string | null;
+          date_updated: string | null;
+          direction: string;
+          error_code: number | null;
+          error_message: string | null;
+          from: string;
+          messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
+          sid: string;
+          status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
+          to: string;
+          uri: string;
+        }>
+      >;
+      listOutgoing: FunctionReference<
+        "query",
+        "internal",
+        { account_sid: string },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          account_sid: string;
+          api_version: string;
+          body: string;
+          counterparty?: string;
+          date_created: string;
+          date_sent: string | null;
+          date_updated: string | null;
+          direction: string;
+          error_code: number | null;
+          error_message: string | null;
+          from: string;
+          messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
+          sid: string;
+          status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
+          to: string;
+          uri: string;
+        }>
       >;
       updateStatus: FunctionReference<
         "mutation",
         "internal",
-        {
-          account_sid: string;
-          auth_token: string;
-          sid: string;
-          status: string;
-        },
+        { account_sid: string; sid: string; status: string },
         any
       >;
     };

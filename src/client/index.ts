@@ -1,6 +1,7 @@
 // This file is for thick component clients and helpers that run
 
 import {
+  Expand,
   FunctionReference,
   GenericActionCtx,
   GenericDataModel,
@@ -8,6 +9,8 @@ import {
   httpActionGeneric,
   HttpRouter,
 } from "convex/server";
+import { api } from "../component/_generated/api.js";
+import { GenericId } from "convex/values";
 // on the Convex backend.
 declare global {
   const Convex: Record<string, unknown>;
@@ -18,71 +21,7 @@ if (typeof Convex === "undefined") {
     "this is Convex backend code, but it's running somewhere else!"
   );
 }
-type componentApiType = {
-  messages: {
-    create: FunctionReference<
-      "action",
-      "internal",
-      {
-        account_sid: string;
-        auth_token: string;
-        body: string;
-        from: string;
-        status_callback: string;
-        to: string;
-      },
-      any
-    >;
-    insertIncoming: FunctionReference<
-      "mutation",
-      "internal",
-      { message: any },
-      any
-    >;
-    list: FunctionReference<
-      "query",
-      "internal",
-      { account_sid: string; },
-      any
-    >;
-    listIncoming: FunctionReference<
-      "query",
-      "internal",
-      { account_sid: string; },
-      any
-    >;
-    updateStatus: FunctionReference<
-      "mutation",
-      "internal",
-      {
-        account_sid: string;
-        auth_token: string;
-        sid: string;
-        status: string;
-      },
-      any
-    >;
-  };
-  phone_numbers: {
-    create: FunctionReference<
-      "action",
-      "internal",
-      { account_sid: string; auth_token: string; number: string },
-      any
-    >;
-    updateSmsUrl: FunctionReference<
-      "action",
-      "internal",
-      {
-        account_sid: string;
-        auth_token: string;
-        sid: string;
-        sms_url: string;
-      },
-      any
-    >;
-  };
-};
+type componentApiType = UseApi<typeof api>;
 
 type RunActionCtx = {
   runAction: GenericActionCtx<GenericDataModel>["runAction"];
@@ -91,115 +30,181 @@ type RunQueryCtx = {
   runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
 };
 
-export default class Twilio {
-  account_sid: string;
-  auth_token: string;
-  http_prefix: string;
+type IncomingMessageHandler = (
+  ctx: GenericActionCtx<GenericDataModel>,
+  message: Record<string, string>
+) => Promise<void>;
 
-  constructor(
-    public componentApi: componentApiType,
-    options?: {
-      account_sid?: string;
-      auth_token?: string;
-      http_prefix?: string;
-    }
-  ) {
-    this.account_sid = options?.account_sid ?? process.env.TWILIO_ACCOUNT_SID!;
-    this.auth_token = options?.auth_token ?? process.env.TWILIO_AUTH_TOKEN!;
-    if (!this.account_sid || !this.auth_token) {
-      throw new Error(
-        "Missing Twilio credentials\n\n" +
-          "npx convex env set TWILIO_ACCOUNT_SID=ACxxxxx\n" +
-          "npx convex env set TWILIO_AUTH_TOKEN=xxxxx"
-      );
-    }
-    this.http_prefix = options?.http_prefix ?? "/twilio";
+export default function twilioClient<
+  From extends { default_from?: string } | Record<string, never>,
+>(
+  componentApi: componentApiType,
+  options?: {
+    TWILIO_ACCOUNT_SID?: string;
+    TWILIO_AUTH_TOKEN?: string;
+    http_prefix?: string;
+    incomingMessageCallback?: IncomingMessageHandler;
+  } & From
+) {
+  const account_sid =
+    options?.TWILIO_ACCOUNT_SID ?? process.env.TWILIO_ACCOUNT_SID!;
+  const auth_token =
+    options?.TWILIO_AUTH_TOKEN ?? process.env.TWILIO_AUTH_TOKEN!;
+  if (!account_sid || !auth_token) {
+    throw new Error(
+      "Missing Twilio credentials\n\n" +
+        "npx convex env set TWILIO_ACCOUNT_SID=ACxxxxx\n" +
+        "npx convex env set TWILIO_AUTH_TOKEN=xxxxx"
+    );
   }
+  const http_prefix = options?.http_prefix ?? "/twilio";
 
-  registerRoutes(http: HttpRouter) {
-    http.route({
-      path: this.http_prefix + "/message-status",
-      method: "POST",
-      handler: this.updateMessageStatus,
-    });
+  return {
+    registerRoutes(http: HttpRouter) {
+      http.route({
+        path: http_prefix + "/message-status",
+        method: "POST",
+        handler: httpActionGeneric(async (ctx, request) => {
+          const requestValues = new URLSearchParams(await request.text());
+          const sid = requestValues.get("MessageSid");
+          const status = requestValues.get("MessageStatus");
 
-    http.route({
-      path: this.http_prefix + "/incoming-message",
-      method: "POST",
-      handler: this.incomingMessage,
-    });
-  }
-
-  async sendMessage(
-    ctx: RunActionCtx,
-    args: { from: string; to: string; body: string }
-  ) {
-    return ctx.runAction(this.componentApi.messages.create, {
-      from: args.from,
-      to: args.to,
-      body: args.body,
-      account_sid: this.account_sid,
-      auth_token: this.auth_token,
-      status_callback:
-        process.env.CONVEX_SITE_URL + this.http_prefix + "/message-status",
-    });
-  }
-
-  async registerIncomingSmsHandler(ctx: RunActionCtx, args: { sid: string }) {
-    return ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
-      account_sid: this.account_sid,
-      auth_token: this.auth_token,
-      sid: args.sid,
-      sms_url:
-        process.env.CONVEX_SITE_URL + this.http_prefix + "/incoming-message",
-    });
-  }
-
-  async list(
-    ctx: RunQueryCtx,
-  ) {
-    return ctx.runQuery(this.componentApi.messages.list, {
-      account_sid: this.account_sid,
-    })
-  }
-
-  async listIncoming(
-    ctx: RunQueryCtx,
-  ) {
-    return ctx.runQuery(this.componentApi.messages.listIncoming, {
-      account_sid: this.account_sid,
-    })
-  }
-
-  private updateMessageStatus = httpActionGeneric(async (ctx, request) => {
-    const requestValues = new URLSearchParams(await request.text());
-    const sid = requestValues.get("MessageSid");
-    const status = requestValues.get("MessageStatus");
-
-    if (sid && status) {
-      await ctx.runMutation(this.componentApi.messages.updateStatus, {
-        account_sid: this.account_sid,
-        auth_token: this.auth_token,
-        sid: sid ?? "",
-        status: status ?? "",
+          if (sid && status) {
+            await ctx.runMutation(componentApi.messages.updateStatus, {
+              account_sid,
+              sid: sid ?? "",
+              status: status ?? "",
+            });
+          } else {
+            console.log(`Invalid request: ${requestValues}`);
+          }
+          return new Response(null, { status: 200 });
+        }),
       });
-    } else {
-      console.log(`Invalid request: ${requestValues}`);
-    }
-    return new Response(null, { status: 200 });
-  });
 
-  private incomingMessage = httpActionGeneric(async (ctx, request) => {
-    const requestValues = new URLSearchParams(await request.text());
-    console.log(requestValues);
-    const record: Record<string, string> = {};
-    requestValues.forEach((value, key) => {
-      record[key] = value;
-    });
-    await ctx.runMutation(this.componentApi.messages.insertIncoming, {
-      message: record,
-    });
+      http.route({
+        path: http_prefix + "/incoming-message",
+        method: "POST",
+        handler: httpActionGeneric(async (ctx, request) => {
+          const requestValues = new URLSearchParams(await request.text());
+          console.log(requestValues);
+          const message = await ctx.runAction(componentApi.messages.getFromTwilioBySidAndInsert, {
+            account_sid,
+            auth_token,
+            sid: requestValues.get("SmsSid") ?? "",
+          });
 
-    return new Response(null, { status: 200 });
-  });
+          if (options?.incomingMessageCallback) {
+            await options?.incomingMessageCallback(ctx, message);
+          }
+          return new Response(null, { status: 200 });
+        }),
+      });
+    },
+
+    async sendMessage(
+      ctx: RunActionCtx,
+      args: Expand<
+        { to: string; body: string } & (From["default_from"] extends string
+          ? { from?: string }
+          : { from: string })
+      >
+    ) {
+      if (!args.from && !options?.default_from) {
+        throw new Error("Missing from number");
+      }
+      return ctx.runAction(componentApi.messages.create, {
+        from: args.from ?? options!.default_from!,
+        to: args.to,
+        body: args.body,
+        account_sid,
+        auth_token,
+        status_callback:
+          process.env.CONVEX_SITE_URL + http_prefix + "/message-status",
+      });
+    },
+
+    async registerIncomingSmsHandler(ctx: RunActionCtx, args: { sid: string }) {
+      return ctx.runAction(componentApi.phone_numbers.updateSmsUrl, {
+        account_sid,
+        auth_token,
+        sid: args.sid,
+        sms_url:
+          process.env.CONVEX_SITE_URL + http_prefix + "/incoming-message",
+      });
+    },
+
+    async list(ctx: RunQueryCtx) {
+      return ctx.runQuery(componentApi.messages.list, {
+        account_sid,
+      });
+    },
+
+    async listIncoming(ctx: RunQueryCtx) {
+      return ctx.runQuery(componentApi.messages.listIncoming, {
+        account_sid,
+      });
+    },
+
+    async listOutgoing(ctx: RunQueryCtx) {
+      return ctx.runQuery(componentApi.messages.listOutgoing, {
+        account_sid,
+      });
+    },
+
+    async getMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
+      return ctx.runQuery(componentApi.messages.getBySid, {
+        account_sid,
+        sid: args.sid,
+      });
+    },
+
+    async getMessagesTo(ctx: RunQueryCtx, args: { to: string }) {
+      return ctx.runQuery(componentApi.messages.getTo, {
+        account_sid,
+        to: args.to,
+      });
+    },
+
+    async getMessagesFrom(ctx: RunQueryCtx, args: { from: string }) {
+      return ctx.runQuery(componentApi.messages.getFrom, {
+        account_sid,
+        from: args.from,
+      });
+    },
+
+    async getMessagesByCounterparty(ctx: RunQueryCtx, args: { counterparty: string }) {
+      return ctx.runQuery(componentApi.messages.getByCounterparty, {
+        account_sid,
+        counterparty: args.counterparty,
+      });
+    },
+  };
 }
+
+export type OpaqueIds<T> =
+  T extends GenericId<infer _T>
+    ? string
+    : T extends (infer U)[]
+      ? OpaqueIds<U>[]
+      : T extends object
+        ? { [K in keyof T]: OpaqueIds<T[K]> }
+        : T;
+
+export type UseApi<API> = Expand<{
+  [mod in keyof API]: API[mod] extends FunctionReference<
+    infer FType,
+    "public",
+    infer FArgs,
+    infer FReturnType,
+    infer FComponentPath
+  >
+    ? FunctionReference<
+        FType,
+        "internal",
+        OpaqueIds<FArgs>,
+        OpaqueIds<FReturnType>,
+        FComponentPath
+      >
+    : UseApi<API[mod]>;
+}>;

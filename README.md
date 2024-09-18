@@ -45,23 +45,27 @@ npx convex env set TWILIO_AUTH_TOKEN=xxxxx
 Instantiate a Twilio Component client in a file in your app's `convex/` folder:
 
 ```ts
-// convex/twilio.ts
+// convex/example.ts
 import Twilio from "@convex-dev/twilio";
 import { components } from "./_generated/server.js";
 
-const twilio = new Twilio(components.twilio);
+const twilio = twilioClient(components.twilio, {
+  // optionally pass in the default "from" phone number you'll be using
+  // this must be a phone number you've created with Twilio
+  default_from: process.env.TWILIO_PHONE_NUMBER!,
+});
 
 // export to be used everywhere in your /convex code
 export default twilio;
 ```
 
-Register webhooks by creating an `http.ts` file in your `convex/` folder and use the client you've exported above:
+Register Twilio webhook handlers by creating an `http.ts` file in your `convex/` folder and use the client you've exported above:
 
 Or, if you already have an http router:
 
 ```ts
 // http.ts
-import twilio from "./twilio";
+import twilio from "./example";
 import { httpRouter } from "convex/server";
 
 const http = httpRouter();
@@ -71,8 +75,8 @@ export default http;
 
 This will register two webhook HTTP handlers in your your Convex app's deployment:
 
-- YOUR_CONVEX_SITE_URL/twilio/message-status - this will capture delivery status of messages you **send**.
-- YOUR_CONVEX_SITE_URL/twilio/incoming-message - this will capture messages **sent to** your Twilio phone number.
+- YOUR_CONVEX_SITE_URL/twilio/message-status - capture and store delivery status of messages you **send**.
+- YOUR_CONVEX_SITE_URL/twilio/incoming-message - capture and store messages **sent to** your Twilio phone number.
 
 Note: if you want to route twilio endpoints somewhere else, pass a custom http_prefix
 
@@ -92,13 +96,12 @@ export const sendSms = internalAction({
     body: v.string(),
   },
   handler: async (ctx, args) => {
-    return await twilio.sendMessage(ctx, {
-      ...args,
-      from: "YOUR_TWILIO_PHONE_NUMBER",
-    });
+    return await twilio.sendMessage(ctx, args);
   },
 });
 ```
+
+By querying the message (see [below](#querying-messages)) you can check for the status ([Twilio Statuses](https://www.twilio.com/docs/messaging/api/message-resource#message-status-values)). The component subscribes to status updates and writes the most up-to-date status into the database.
 
 ## Receiving Messages
 
@@ -130,13 +133,26 @@ export const registerIncomingSmsHandler = internalAction({
 });
 ```
 
-Now, incoming messages will be captured by the component and logged in the `incoming_messages` table.
+Now, incoming messages will be captured by the component and logged in the `messages` table.
+
+You can execute your own logic upon receiving an incoming message, by providing a callback when instantiating the Twilio Component client:
+```ts
+// convex/example.ts
+
+const twilio = twilioClient(components.twilio, {
+        default_from: process.env.TWILIO_PHONE_NUMBER || "",
+        incomingMessageCallback: async (ctx, message) => {
+            // use ctx here to execute other Convex functions
+            console.log("Incoming message", message);
+        }
+});
+```
 
 ## Querying Messages
 
-To list all the mssages, use the `list` method of the `Twilio` class in your Convex function.
+To list all the mssages, use the `list` method in your Convex function.
 
-To list all the incoming messages, use the `listIncoming` method of the `Twilio` class:
+To list all the incoming or outgoing messages, use `listIncoming` and `listOutgoing` methods:
 
 ```ts
 // convex/messages.ts
@@ -156,4 +172,61 @@ export const listIncoming = query({
     return await twilio.listIncoming(ctx);
   },
 });
+
+export const listOutgoing = query({
+  args: {},
+  handler: async (ctx) => {
+    return await twilio.listOutgoing(ctx);
+  },
+});
+```
+
+To get a single message by its sid, use `getMessageBySid`:
+```ts
+
+export const getMessageBySid = query({
+    args: {
+        sid: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessageBySid(ctx, args);
+    }  
+})
+```
+
+
+Get messages by the "to" phone number:
+```ts
+export const getMessagesTo = query({
+    args: {
+        to: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessagesTo(ctx, args);
+    }
+})
+```
+
+Get messages by the "from" phone number:
+```ts
+export const getMessagesFrom = query({
+    args: {
+        from: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessagesFrom(ctx, args);
+    }
+})
+```
+
+You can also get all messages to and from a particular number:
+```ts
+export const getMessagesByCounterparty = query({
+    args: {
+        from: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessagesByCounterparty(ctx, args);
+    }
+})
 ```

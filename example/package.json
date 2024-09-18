@@ -9,8 +9,8 @@
     "lint": "tsc -p convex && eslint convex"
   },
   "dependencies": {
-    "convex": "^1.15.1-alpha.3",
-    "twilio_component": "file:../twilio_component-0.0.5.tgz"
+    "@get-convex/twilio": "file:../get-convex-twilio-0.0.6.tgz",
+    "convex": "^1.16.0-alpha.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",

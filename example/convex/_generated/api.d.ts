@@ -10,9 +10,9 @@
  * @module
  */
 
+import type * as example from "../example.js";
 import type * as http from "../http.js";
 import type * as messages from "../messages.js";
-import type * as twilio from "../twilio.js";
 
 import type {
   ApiFromModules,
@@ -28,9 +28,9 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  example: typeof example;
   http: typeof http;
   messages: typeof messages;
-  twilio: typeof twilio;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

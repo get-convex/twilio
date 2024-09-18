@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internalAction, query } from "./_generated/server";
-import twilio from "./twilio";
+import twilio from "./example.js";
 
 export const sendSms = internalAction({
     args: {
@@ -8,10 +8,7 @@ export const sendSms = internalAction({
         body: v.string(),
     },
     handler: async (ctx, args) => {
-        return await twilio.sendMessage(ctx, {
-            ...args,
-            from: process.env.TWILIO_PHONE_NUMBER || "",
-        });
+        return await twilio.sendMessage(ctx, args);
     }
 })
 
@@ -33,5 +30,48 @@ export const listIncoming = query({
     args: {},
     handler: async (ctx) => {
         return await twilio.listIncoming(ctx);
+    }
+})
+
+export const listOutgoing = query({
+    args: {},
+    handler: async (ctx) => {
+        return await twilio.listOutgoing(ctx);
+    }
+})
+
+export const getMessageBySid = query({
+    args: {
+        sid: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessageBySid(ctx, args);
+    }  
+})
+
+export const getMessagesTo = query({
+    args: {
+        to: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessagesTo(ctx, args);
+    }
+})
+
+export const getMessagesFrom = query({
+    args: {
+        from: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessagesFrom(ctx, args);
+    }
+})
+
+export const getMessagesByCounterparty = query({
+    args: {
+        counterparty: v.string(),
+    },
+    handler: async (ctx, args) => {
+        return await twilio.getMessagesByCounterparty(ctx, args);
     }
 })

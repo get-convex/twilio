@@ -1,5 +1,5 @@
 import { defineApp } from "convex/server";
-import twilio from "twilio_component/convex.config.js";
+import twilio from "@get-convex/twilio/convex.config.js";
 
 const app = defineApp();
 app.use(twilio, { name: "twilio" });
