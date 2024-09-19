@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { v, VString } from "convex/values";
 import {
   action,
   internalMutation,
@@ -9,12 +9,17 @@ import { internal } from "./_generated/api.js";
 import { twilioRequest } from "./utils.js";
 import schema from "./schema.js";
 import {
-  GenericTableInfo,
+  FunctionHandle,
   NamedTableInfo,
   Query,
   WithoutSystemFields,
 } from "convex/server";
 import { DataModel, Doc } from "./_generated/dataModel.js";
+
+export type Message = WithoutSystemFields<Doc<"messages">>;
+const callbackValidator = v.string() as VString<
+  FunctionHandle<"mutation", { message: Message }>
+>;
 
 export const create = action({
   args: {
@@ -24,9 +29,10 @@ export const create = action({
     to: v.string(),
     body: v.string(),
     status_callback: v.string(),
+    callback: v.optional(callbackValidator),
   },
   returns: schema.tables.messages.validator,
-  handler: async (ctx, args): Promise<WithoutSystemFields<Doc<"messages">>> => {
+  handler: async (ctx, args): Promise<Message> => {
     const message = await twilioRequest(
       "Messages.json",
       args.account_sid,
@@ -38,13 +44,17 @@ export const create = action({
         StatusCallback: args.status_callback,
       }
     );
-    return ctx.runMutation(internal.messages.insert, { message });
+    return ctx.runMutation(internal.messages.insert, {
+      message,
+      callback: args.callback,
+    });
   },
 });
 
 export const insert = internalMutation({
   args: {
-    message: v.any(),
+    message: schema.tables.messages.validator,
+    callback: v.optional(callbackValidator),
   },
   returns: schema.tables.messages.validator,
   handler: async (ctx, args): Promise<WithoutSystemFields<Doc<"messages">>> => {
@@ -53,6 +63,9 @@ export const insert = internalMutation({
         ? args.message.from
         : args.message.to;
     await ctx.db.insert("messages", args.message);
+    if (args.callback) {
+      await ctx.runMutation(args.callback, { message: args.message });
+    }
     return args.message;
   },
 });
@@ -99,7 +112,7 @@ export const listOutgoing = query({
   },
   returns: v.array(schema.tables.messages.validator),
   handler: async (ctx, args) => {
-    return await takeOrCollectFields(
+    return takeOrCollectFields(
       ctx.db
         .query("messages")
         .withIndex("by_account_sid_and_direction", (q) =>
@@ -212,6 +225,7 @@ export const getFromTwilioBySidAndInsert = action({
     account_sid: v.string(),
     auth_token: v.string(),
     sid: v.string(),
+    incomingMessageCallback: v.optional(callbackValidator),
   },
   returns: schema.tables.messages.validator,
   handler: async (ctx, args): Promise<WithoutSystemFields<Doc<"messages">>> => {
@@ -222,14 +236,17 @@ export const getFromTwilioBySidAndInsert = action({
       {},
       "GET"
     );
-    return ctx.runMutation(internal.messages.insert, { message });
+    return ctx.runMutation(internal.messages.insert, {
+      message,
+      callback: args.incomingMessageCallback,
+    });
   },
 });
 
 function takeOrCollectFields(
   query: Query<NamedTableInfo<DataModel, "messages">>,
   limit: number | undefined
-) {
+): Promise<Message[]> {
   let messagesPromise;
   if (limit) {
     messagesPromise = query.take(limit);
@@ -239,9 +256,7 @@ function takeOrCollectFields(
   return messagesPromise.then((messages) => messages.map(withoutSystemFields));
 }
 
-function withoutSystemFields<T extends object>(
-  doc: T & { _id: string; _creationTime: number }
-) {
+function withoutSystemFields(doc: Doc<"messages">): Message {
   const { _id, _creationTime, ...rest } = doc;
-  return rest as T;
+  return rest;
 }

@@ -1,8 +1,11 @@
 // This file is for thick component clients and helpers that run
 
 import {
+  createFunctionHandle,
   Expand,
+  FunctionHandle,
   FunctionReference,
+  FunctionType,
   GenericActionCtx,
   GenericDataModel,
   GenericQueryCtx,
@@ -13,12 +16,14 @@ import { api } from "../component/_generated/api.js";
 import { GenericId, Infer } from "convex/values";
 import schema from "../component/schema.js";
 
-export type Message = Infer<typeof schema.tables.messages.validator>;
+export const messageValidator = schema.tables.messages.validator;
+export type Message = Infer<typeof messageValidator>;
 
-type IncomingMessageHandler = (
-  ctx: GenericActionCtx<GenericDataModel>,
-  message: Message
-) => Promise<void>;
+export type MessageHandler = FunctionReference<
+  "mutation",
+  "internal",
+  { message: Message }
+>;
 
 export default class Twilio<
   From extends { default_from?: string } | Record<string, never>,
@@ -26,7 +31,8 @@ export default class Twilio<
   public account_sid: string;
   public auth_token: string;
   public http_prefix: string;
-  private incomingMessageCallback?: IncomingMessageHandler;
+  private incomingMessageCallback?: MessageHandler;
+  private outgoingMessageCallback?: MessageHandler;
   private default_from?: From["default_from"];
 
   constructor(
@@ -35,7 +41,8 @@ export default class Twilio<
       TWILIO_ACCOUNT_SID?: string;
       TWILIO_AUTH_TOKEN?: string;
       http_prefix?: string;
-      incomingMessageCallback?: IncomingMessageHandler;
+      incomingMessageCallback?: MessageHandler;
+      outgoingMessageCallback?: MessageHandler;
     } & From
   ) {
     this.account_sid =
@@ -50,6 +57,8 @@ export default class Twilio<
       );
     }
     this.http_prefix = options?.http_prefix ?? "/twilio";
+    this.incomingMessageCallback = options?.incomingMessageCallback;
+    this.outgoingMessageCallback = options?.outgoingMessageCallback;
   }
 
   registerRoutes(http: HttpRouter) {
@@ -80,18 +89,18 @@ export default class Twilio<
       handler: httpActionGeneric(async (ctx, request) => {
         const requestValues = new URLSearchParams(await request.text());
         console.log(requestValues);
-        const message = await ctx.runAction(
+        await ctx.runAction(
           this.componentApi.messages.getFromTwilioBySidAndInsert,
           {
             account_sid: this.account_sid,
             auth_token: this.auth_token,
             sid: requestValues.get("SmsSid") ?? "",
+            incomingMessageCallback:
+              this.incomingMessageCallback &&
+              (await createFunctionHandle(this.incomingMessageCallback)),
           }
         );
 
-        if (this.incomingMessageCallback) {
-          await this.incomingMessageCallback(ctx, message);
-        }
         return new Response(null, { status: 200 });
       }),
     });
@@ -116,6 +125,9 @@ export default class Twilio<
       auth_token: this.auth_token,
       status_callback:
         process.env.CONVEX_SITE_URL + this.http_prefix + "/message-status",
+      callback:
+        this.outgoingMessageCallback &&
+        (await createFunctionHandle(this.outgoingMessageCallback)),
     });
   }
 
@@ -188,11 +200,13 @@ export default class Twilio<
 export type OpaqueIds<T> =
   T extends GenericId<infer _T>
     ? string
-    : T extends (infer U)[]
-      ? OpaqueIds<U>[]
-      : T extends object
-        ? { [K in keyof T]: OpaqueIds<T[K]> }
-        : T;
+    : T extends FunctionHandle<FunctionType>
+      ? string
+      : T extends (infer U)[]
+        ? OpaqueIds<U>[]
+        : T extends object
+          ? { [K in keyof T]: OpaqueIds<T[K]> }
+          : T;
 
 export type UseApi<API> = Expand<{
   [mod in keyof API]: API[mod] extends FunctionReference<
