@@ -168,7 +168,8 @@ export const list = query({
   handler: async (ctx) => {
     const allMessages = await twilio.list(ctx);
     const receivedMessages = await twilio.listIncoming(ctx);
-    const sentMessagse = await twilio.listOutgoing(ctx);
+    const sentMessages = await twilio.listOutgoing(ctx);
+    return { allMessages, receivedMessages, sentMessages };
   },
 });
 ```
