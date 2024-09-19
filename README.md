@@ -139,8 +139,8 @@ import { Twilio, messageValidator } from "@convex-dev/twilio";
 
 const twilio = new Twilio(components.twilio, {
   default_from: process.env.TWILIO_PHONE_NUMBER || "",
-  incomingMessageCallback: internal.example.handleIncomingMessage,
 });
+twilio.incomingMessageCallback = internal.example.handleIncomingMessage;
 
 export const handleIncomingMessage = internalMutation({
   args: messageValidator,

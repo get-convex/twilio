@@ -25,15 +25,15 @@ export type MessageHandler = FunctionReference<
   { message: Message }
 >;
 
-export default class Twilio<
+export class Twilio<
   From extends { default_from?: string } | Record<string, never>,
 > {
-  public account_sid: string;
-  public auth_token: string;
-  public http_prefix: string;
-  private incomingMessageCallback?: MessageHandler;
-  private outgoingMessageCallback?: MessageHandler;
-  private default_from?: From["default_from"];
+  public readonly account_sid: string;
+  public readonly auth_token: string;
+  public readonly http_prefix: string;
+  public readonly default_from?: From["default_from"];
+  public incomingMessageCallback?: MessageHandler;
+  public defaultOutgoingMessageCallback?: MessageHandler;
 
   constructor(
     public componentApi: componentApiType,
@@ -42,7 +42,7 @@ export default class Twilio<
       TWILIO_AUTH_TOKEN?: string;
       http_prefix?: string;
       incomingMessageCallback?: MessageHandler;
-      outgoingMessageCallback?: MessageHandler;
+      defaultOutgoingMessageCallback?: MessageHandler;
     } & From
   ) {
     this.account_sid =
@@ -58,7 +58,8 @@ export default class Twilio<
     }
     this.http_prefix = options?.http_prefix ?? "/twilio";
     this.incomingMessageCallback = options?.incomingMessageCallback;
-    this.outgoingMessageCallback = options?.outgoingMessageCallback;
+    this.defaultOutgoingMessageCallback =
+      options?.defaultOutgoingMessageCallback;
   }
 
   registerRoutes(http: HttpRouter) {
@@ -109,7 +110,11 @@ export default class Twilio<
   async sendMessage(
     ctx: RunActionCtx,
     args: Expand<
-      { to: string; body: string } & (From["default_from"] extends string
+      {
+        to: string;
+        body: string;
+        callback?: MessageHandler;
+      } & (From["default_from"] extends string
         ? { from?: string }
         : { from: string })
     >
@@ -125,9 +130,10 @@ export default class Twilio<
       auth_token: this.auth_token,
       status_callback:
         process.env.CONVEX_SITE_URL + this.http_prefix + "/message-status",
-      callback:
-        this.outgoingMessageCallback &&
-        (await createFunctionHandle(this.outgoingMessageCallback)),
+      callback: args.callback
+        ? await createFunctionHandle(args.callback)
+        : this.defaultOutgoingMessageCallback &&
+          (await createFunctionHandle(this.defaultOutgoingMessageCallback)),
     });
   }
 
@@ -196,6 +202,7 @@ export default class Twilio<
     });
   }
 }
+export default Twilio;
 
 export type OpaqueIds<T> =
   T extends GenericId<infer _T>
