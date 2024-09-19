@@ -1,218 +1,262 @@
-import { v } from "convex/values";
-import { action, internalMutation, mutation, query } from "./_generated/server.js";
+import { v, VString } from "convex/values";
+import {
+  action,
+  internalMutation,
+  mutation,
+  query,
+} from "./_generated/server.js";
 import { internal } from "./_generated/api.js";
 import { twilioRequest } from "./utils.js";
 import schema from "./schema.js";
+import {
+  FunctionHandle,
+  NamedTableInfo,
+  Query,
+  WithoutSystemFields,
+} from "convex/server";
+import { DataModel, Doc } from "./_generated/dataModel.js";
+
+export type Message = WithoutSystemFields<Doc<"messages">>;
+const callbackValidator = v.string() as VString<
+  FunctionHandle<"mutation", { message: Message }>
+>;
 
 export const create = action({
-    args: {
-        account_sid: v.string(),
-        auth_token: v.string(),
-        from: v.string(),
-        to: v.string(),
-        body: v.string(),
-        status_callback: v.string(),
-    },
-    handler: async (ctx, args) => {
-        const message = await twilioRequest("Messages.json", args.account_sid, args.auth_token, {
-            From: args.from,
-            To: args.to,
-            Body: args.body,
-            StatusCallback: args.status_callback,
-        });
-        const id = await ctx.runMutation(internal.messages.insert, { message });
-        return message;        
-    }
-})
+  args: {
+    account_sid: v.string(),
+    auth_token: v.string(),
+    from: v.string(),
+    to: v.string(),
+    body: v.string(),
+    status_callback: v.string(),
+    callback: v.optional(callbackValidator),
+  },
+  returns: schema.tables.messages.validator,
+  handler: async (ctx, args): Promise<Message> => {
+    const message = await twilioRequest(
+      "Messages.json",
+      args.account_sid,
+      args.auth_token,
+      {
+        From: args.from,
+        To: args.to,
+        Body: args.body,
+        StatusCallback: args.status_callback,
+      }
+    );
+    return ctx.runMutation(internal.messages.insert, {
+      message,
+      callback: args.callback,
+    });
+  },
+});
 
 export const insert = internalMutation({
-    args: {
-        message: v.any(),
-    },
-    returns: v.id("messages"),
-    handler: async (ctx, args) => {
-        args.message.counterparty = args.message.direction === "inbound" ? args.message.from : args.message.to;
-        return await ctx.db.insert("messages", args.message);
+  args: {
+    message: schema.tables.messages.validator,
+    callback: v.optional(callbackValidator),
+  },
+  returns: schema.tables.messages.validator,
+  handler: async (ctx, args): Promise<WithoutSystemFields<Doc<"messages">>> => {
+    args.message.counterparty =
+      args.message.direction === "inbound"
+        ? args.message.from
+        : args.message.to;
+    await ctx.db.insert("messages", args.message);
+    if (args.callback) {
+      await ctx.runMutation(args.callback, { message: args.message });
     }
-})
+    return args.message;
+  },
+});
 
 export const list = query({
-    args: {
-        account_sid: v.string(),
-    },
-    returns: v.array(v.object({
-        ...schema.tables.messages.validator.fields,
-        _id: v.id("messages"),
-        _creationTime: v.number(),
-    })),
-    handler: async (ctx, args) => {
-        const messages = await ctx.db.query("messages")
-            .withIndex("by_account_sid", q => q.eq("account_sid", args.account_sid))
-            .collect();
-        return messages;
-    }
-})
+  args: {
+    account_sid: v.string(),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(schema.tables.messages.validator),
+  handler: async (ctx, args) => {
+    return takeOrCollectFields(
+      ctx.db
+        .query("messages")
+        .withIndex("by_account_sid", (q) =>
+          q.eq("account_sid", args.account_sid)
+        ),
+      args.limit
+    );
+  },
+});
 
 export const listIncoming = query({
-    args: {
-        account_sid: v.string(),
-    },
-    returns: v.array(v.object({
-        ...schema.tables.messages.validator.fields,
-        _id: v.id("messages"),
-        _creationTime: v.number(),
-    })),
-    handler: async (ctx, args) => {
-        return await ctx.db.query("messages")
-            .withIndex("by_account_sid_and_direction", q => q
-                .eq("account_sid", args.account_sid)
-                .eq("direction", "inbound")
-            )
-            .collect();
-    }
-})
+  args: {
+    account_sid: v.string(),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(schema.tables.messages.validator),
+  handler: async (ctx, args) => {
+    return takeOrCollectFields(
+      ctx.db
+        .query("messages")
+        .withIndex("by_account_sid_and_direction", (q) =>
+          q.eq("account_sid", args.account_sid).eq("direction", "inbound")
+        ),
+      args.limit
+    );
+  },
+});
 export const listOutgoing = query({
-    args: {
-        account_sid: v.string(),
-    },
-    returns: v.array(v.object({
-        ...schema.tables.messages.validator.fields,
-        _id: v.id("messages"),
-        _creationTime: v.number(),
-    })),
-    handler: async (ctx, args) => {
-        return await ctx.db.query("messages")
-            .withIndex("by_account_sid_and_direction", q => q
-                .eq("account_sid", args.account_sid)
-                .eq("direction", "outbound-api")
-            )
-            .collect();
-    }
-})
+  args: {
+    account_sid: v.string(),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(schema.tables.messages.validator),
+  handler: async (ctx, args) => {
+    return takeOrCollectFields(
+      ctx.db
+        .query("messages")
+        .withIndex("by_account_sid_and_direction", (q) =>
+          q.eq("account_sid", args.account_sid).eq("direction", "outbound-api")
+        ),
+      args.limit
+    );
+  },
+});
 
 export const getBySid = query({
-    args: {
-        account_sid: v.string(),
-        sid: v.string(),
-    },
-    returns: v.union(
-        v.object({
-            ...schema.tables.messages.validator.fields,
-            _id: v.id("messages"),
-            _creationTime: v.number(),
-        }),
-        v.null()
-    ),
-    handler: async (ctx, args) => {
-        return await ctx.db.query("messages")
-            .withIndex("by_sid", q => q
-                .eq("account_sid", args.account_sid)
-                .eq("sid", args.sid)
-            )
-            .first();
-    }
-})
+  args: {
+    account_sid: v.string(),
+    sid: v.string(),
+  },
+  returns: v.union(schema.tables.messages.validator, v.null()),
+  handler: async (ctx, args) => {
+    const message = await ctx.db
+      .query("messages")
+      .withIndex("by_sid", (q) =>
+        q.eq("account_sid", args.account_sid).eq("sid", args.sid)
+      )
+      .first();
+    return message && withoutSystemFields(message);
+  },
+});
 
 export const getTo = query({
-    args: {
-        account_sid: v.string(),
-        to: v.string(),
-    },
-    returns: v.array(v.object({
-        ...schema.tables.messages.validator.fields,
-        _id: v.id("messages"),
-        _creationTime: v.number(),
-    })),
-    handler: async (ctx, args) => {
-        return await ctx.db.query("messages")
-            .withIndex("by_to", q => q
-                .eq("account_sid", args.account_sid)
-                .eq("to", args.to)
-            )
-            .collect();
-    }
-})
+  args: {
+    account_sid: v.string(),
+    to: v.string(),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(schema.tables.messages.validator),
+  handler: async (ctx, args) => {
+    return takeOrCollectFields(
+      ctx.db
+        .query("messages")
+        .withIndex("by_to", (q) =>
+          q.eq("account_sid", args.account_sid).eq("to", args.to)
+        ),
+      args.limit
+    );
+  },
+});
 
 export const getFrom = query({
-    args: {
-        account_sid: v.string(),
-        from: v.string(),
-    },
-    returns: v.array(v.object({
-        ...schema.tables.messages.validator.fields,
-        _id: v.id("messages"),
-        _creationTime: v.number(),
-    })),
-    handler: async (ctx, args) => {
-        return await ctx.db.query("messages")
-            .withIndex("by_from", q => q
-                .eq("account_sid", args.account_sid)
-                .eq("from", args.from)
-            )
-            .collect();
-    }
-})
+  args: {
+    account_sid: v.string(),
+    from: v.string(),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(schema.tables.messages.validator),
+  handler: async (ctx, args) => {
+    return takeOrCollectFields(
+      ctx.db
+        .query("messages")
+        .withIndex("by_from", (q) =>
+          q.eq("account_sid", args.account_sid).eq("from", args.from)
+        ),
+      args.limit
+    );
+  },
+});
 
 export const getByCounterparty = query({
-    args: {
-        account_sid: v.string(),
-        counterparty: v.string(),
-    },
-    returns: v.array(v.object({
-        ...schema.tables.messages.validator.fields,
-        _id: v.id("messages"),
-        _creationTime: v.number(),
-    })),
-    handler: async (ctx, args) => {
-        return await ctx.db.query("messages")
-            .withIndex("by_counterparty", q => q
-                .eq("account_sid", args.account_sid)
-                .eq("counterparty", args.counterparty)
-            )
-            .collect();
-    }
-})
+  args: {
+    account_sid: v.string(),
+    counterparty: v.string(),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(schema.tables.messages.validator),
+  handler: async (ctx, args) => {
+    return takeOrCollectFields(
+      ctx.db
+        .query("messages")
+        .withIndex("by_counterparty", (q) =>
+          q
+            .eq("account_sid", args.account_sid)
+            .eq("counterparty", args.counterparty)
+        ),
+      args.limit
+    );
+  },
+});
 
 export const updateStatus = mutation({
-    args: {
-        account_sid: v.string(),
-        sid: v.string(),
-        status: v.string(),
-    },
-    handler: async (ctx, args) => {
-        const message = await ctx.db.query("messages")
-        .withIndex("by_sid", q => q
-            .eq("account_sid", args.account_sid)
-            .eq("sid", args.sid)
-        )
-        .first();
-        if (!message) {
-            throw new Error("Message not found");
-        }
-        await ctx.db.patch(message._id, { status: args.status });
+  args: {
+    account_sid: v.string(),
+    sid: v.string(),
+    status: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const message = await ctx.db
+      .query("messages")
+      .withIndex("by_sid", (q) =>
+        q.eq("account_sid", args.account_sid).eq("sid", args.sid)
+      )
+      .first();
+    if (!message) {
+      throw new Error("Message not found");
     }
-})
+    await ctx.db.patch(message._id, { status: args.status });
+  },
+});
 
 export const getFromTwilioBySidAndInsert = action({
-    args: {
-        account_sid: v.string(),
-        auth_token: v.string(),
-        sid: v.string(),
-    },
-    returns: v.object({
-        ...schema.tables.messages.validator.fields,
-        _id: v.id("messages"),
-        _creationTime: v.number(),
-    }),
-    handler: async (ctx, args) => {
-        const message = await twilioRequest(
-            `Messages/${args.sid}.json`,
-            args.account_sid,
-            args.auth_token,
-            {},
-            "GET"
-        );
-        message._id = await ctx.runMutation(internal.messages.insert, { message });
-        return message;
-    }
-})
+  args: {
+    account_sid: v.string(),
+    auth_token: v.string(),
+    sid: v.string(),
+    incomingMessageCallback: v.optional(callbackValidator),
+  },
+  returns: schema.tables.messages.validator,
+  handler: async (ctx, args): Promise<WithoutSystemFields<Doc<"messages">>> => {
+    const message = await twilioRequest(
+      `Messages/${args.sid}.json`,
+      args.account_sid,
+      args.auth_token,
+      {},
+      "GET"
+    );
+    return ctx.runMutation(internal.messages.insert, {
+      message,
+      callback: args.incomingMessageCallback,
+    });
+  },
+});
+
+function takeOrCollectFields(
+  query: Query<NamedTableInfo<DataModel, "messages">>,
+  limit: number | undefined
+): Promise<Message[]> {
+  let messagesPromise;
+  if (limit) {
+    messagesPromise = query.take(limit);
+  } else {
+    messagesPromise = query.collect();
+  }
+  return messagesPromise.then((messages) => messages.map(withoutSystemFields));
+}
+
+function withoutSystemFields(doc: Doc<"messages">): Message {
+  const { _id, _creationTime, ...rest } = doc;
+  return rest;
+}

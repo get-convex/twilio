@@ -152,40 +152,6 @@ export type DatabaseWriter = GenericDatabaseWriter<DataModel>;
 
 export declare const components: {
   twilio: {
-    index: {
-      checkRateLimit: FunctionReference<
-        "query",
-        "internal",
-        {
-          count?: number;
-          key?: string;
-          name: string;
-          name2: string;
-          reserve?: boolean;
-          throws?: boolean;
-        },
-        { ok: boolean; retryAt?: number; ts?: number; value?: number }
-      >;
-      rateLimit: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          count?: number;
-          key?: string;
-          name: string;
-          name2: string;
-          reserve?: boolean;
-          throws?: boolean;
-        },
-        { ok: boolean; retryAt?: number }
-      >;
-      resetRateLimit: FunctionReference<
-        "mutation",
-        "internal",
-        { key?: string; name: string },
-        any
-      >;
-    };
     messages: {
       create: FunctionReference<
         "action",
@@ -194,19 +160,40 @@ export declare const components: {
           account_sid: string;
           auth_token: string;
           body: string;
+          callback?: string;
           from: string;
           status_callback: string;
           to: string;
         },
-        any
+        {
+          account_sid: string;
+          api_version: string;
+          body: string;
+          counterparty?: string;
+          date_created: string;
+          date_sent: string | null;
+          date_updated: string | null;
+          direction: string;
+          error_code: number | null;
+          error_message: string | null;
+          from: string;
+          messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
+          sid: string;
+          status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
+          to: string;
+          uri: string;
+        }
       >;
       getByCounterparty: FunctionReference<
         "query",
         "internal",
-        { account_sid: string; counterparty: string },
+        { account_sid: string; counterparty: string; limit?: number },
         Array<{
-          _creationTime: number;
-          _id: string;
           account_sid: string;
           api_version: string;
           body: string;
@@ -235,8 +222,6 @@ export declare const components: {
         "internal",
         { account_sid: string; sid: string },
         {
-          _creationTime: number;
-          _id: string;
           account_sid: string;
           api_version: string;
           body: string;
@@ -263,10 +248,8 @@ export declare const components: {
       getFrom: FunctionReference<
         "query",
         "internal",
-        { account_sid: string; from: string },
+        { account_sid: string; from: string; limit?: number },
         Array<{
-          _creationTime: number;
-          _id: string;
           account_sid: string;
           api_version: string;
           body: string;
@@ -293,10 +276,13 @@ export declare const components: {
       getFromTwilioBySidAndInsert: FunctionReference<
         "action",
         "internal",
-        { account_sid: string; auth_token: string; sid: string },
         {
-          _creationTime: number;
-          _id: string;
+          account_sid: string;
+          auth_token: string;
+          incomingMessageCallback?: string;
+          sid: string;
+        },
+        {
           account_sid: string;
           api_version: string;
           body: string;
@@ -323,10 +309,8 @@ export declare const components: {
       getTo: FunctionReference<
         "query",
         "internal",
-        { account_sid: string; to: string },
+        { account_sid: string; limit?: number; to: string },
         Array<{
-          _creationTime: number;
-          _id: string;
           account_sid: string;
           api_version: string;
           body: string;
@@ -353,10 +337,8 @@ export declare const components: {
       list: FunctionReference<
         "query",
         "internal",
-        { account_sid: string },
+        { account_sid: string; limit?: number },
         Array<{
-          _creationTime: number;
-          _id: string;
           account_sid: string;
           api_version: string;
           body: string;
@@ -383,10 +365,8 @@ export declare const components: {
       listIncoming: FunctionReference<
         "query",
         "internal",
-        { account_sid: string },
+        { account_sid: string; limit?: number },
         Array<{
-          _creationTime: number;
-          _id: string;
           account_sid: string;
           api_version: string;
           body: string;
@@ -413,10 +393,8 @@ export declare const components: {
       listOutgoing: FunctionReference<
         "query",
         "internal",
-        { account_sid: string },
+        { account_sid: string; limit?: number },
         Array<{
-          _creationTime: number;
-          _id: string;
           account_sid: string;
           api_version: string;
           body: string;
@@ -444,7 +422,7 @@ export declare const components: {
         "mutation",
         "internal",
         { account_sid: string; sid: string; status: string },
-        any
+        null
       >;
     };
     phone_numbers: {

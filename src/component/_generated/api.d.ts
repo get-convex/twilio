@@ -41,30 +41,269 @@ export type Mounts = {
         account_sid: string;
         auth_token: string;
         body: string;
+        callback?: string;
         from: string;
         status_callback: string;
         to: string;
       },
-      any
+      {
+        account_sid: string;
+        api_version: string;
+        body: string;
+        counterparty?: string;
+        date_created: string;
+        date_sent: string | null;
+        date_updated: string | null;
+        direction: string;
+        error_code: number | null;
+        error_message: string | null;
+        from: string;
+        messaging_service_sid: string | null;
+        num_media: string;
+        num_segments: string;
+        price: string | null;
+        price_unit: string | null;
+        sid: string;
+        status: string;
+        subresource_uris: { feedback?: string; media: string } | null;
+        to: string;
+        uri: string;
+      }
     >;
-    insertIncoming: FunctionReference<
-      "mutation",
+    getByCounterparty: FunctionReference<
+      "query",
       "public",
-      { message: any },
-      any
+      { account_sid: string; counterparty: string; limit?: number },
+      Array<{
+        account_sid: string;
+        api_version: string;
+        body: string;
+        counterparty?: string;
+        date_created: string;
+        date_sent: string | null;
+        date_updated: string | null;
+        direction: string;
+        error_code: number | null;
+        error_message: string | null;
+        from: string;
+        messaging_service_sid: string | null;
+        num_media: string;
+        num_segments: string;
+        price: string | null;
+        price_unit: string | null;
+        sid: string;
+        status: string;
+        subresource_uris: { feedback?: string; media: string } | null;
+        to: string;
+        uri: string;
+      }>
     >;
-    list: FunctionReference<"query", "public", { account_sid: string }, any>;
+    getBySid: FunctionReference<
+      "query",
+      "public",
+      { account_sid: string; sid: string },
+      {
+        account_sid: string;
+        api_version: string;
+        body: string;
+        counterparty?: string;
+        date_created: string;
+        date_sent: string | null;
+        date_updated: string | null;
+        direction: string;
+        error_code: number | null;
+        error_message: string | null;
+        from: string;
+        messaging_service_sid: string | null;
+        num_media: string;
+        num_segments: string;
+        price: string | null;
+        price_unit: string | null;
+        sid: string;
+        status: string;
+        subresource_uris: { feedback?: string; media: string } | null;
+        to: string;
+        uri: string;
+      } | null
+    >;
+    getFrom: FunctionReference<
+      "query",
+      "public",
+      { account_sid: string; from: string; limit?: number },
+      Array<{
+        account_sid: string;
+        api_version: string;
+        body: string;
+        counterparty?: string;
+        date_created: string;
+        date_sent: string | null;
+        date_updated: string | null;
+        direction: string;
+        error_code: number | null;
+        error_message: string | null;
+        from: string;
+        messaging_service_sid: string | null;
+        num_media: string;
+        num_segments: string;
+        price: string | null;
+        price_unit: string | null;
+        sid: string;
+        status: string;
+        subresource_uris: { feedback?: string; media: string } | null;
+        to: string;
+        uri: string;
+      }>
+    >;
+    getFromTwilioBySidAndInsert: FunctionReference<
+      "action",
+      "public",
+      {
+        account_sid: string;
+        auth_token: string;
+        incomingMessageCallback?: string;
+        sid: string;
+      },
+      {
+        account_sid: string;
+        api_version: string;
+        body: string;
+        counterparty?: string;
+        date_created: string;
+        date_sent: string | null;
+        date_updated: string | null;
+        direction: string;
+        error_code: number | null;
+        error_message: string | null;
+        from: string;
+        messaging_service_sid: string | null;
+        num_media: string;
+        num_segments: string;
+        price: string | null;
+        price_unit: string | null;
+        sid: string;
+        status: string;
+        subresource_uris: { feedback?: string; media: string } | null;
+        to: string;
+        uri: string;
+      }
+    >;
+    getTo: FunctionReference<
+      "query",
+      "public",
+      { account_sid: string; limit?: number; to: string },
+      Array<{
+        account_sid: string;
+        api_version: string;
+        body: string;
+        counterparty?: string;
+        date_created: string;
+        date_sent: string | null;
+        date_updated: string | null;
+        direction: string;
+        error_code: number | null;
+        error_message: string | null;
+        from: string;
+        messaging_service_sid: string | null;
+        num_media: string;
+        num_segments: string;
+        price: string | null;
+        price_unit: string | null;
+        sid: string;
+        status: string;
+        subresource_uris: { feedback?: string; media: string } | null;
+        to: string;
+        uri: string;
+      }>
+    >;
+    list: FunctionReference<
+      "query",
+      "public",
+      { account_sid: string; limit?: number },
+      Array<{
+        account_sid: string;
+        api_version: string;
+        body: string;
+        counterparty?: string;
+        date_created: string;
+        date_sent: string | null;
+        date_updated: string | null;
+        direction: string;
+        error_code: number | null;
+        error_message: string | null;
+        from: string;
+        messaging_service_sid: string | null;
+        num_media: string;
+        num_segments: string;
+        price: string | null;
+        price_unit: string | null;
+        sid: string;
+        status: string;
+        subresource_uris: { feedback?: string; media: string } | null;
+        to: string;
+        uri: string;
+      }>
+    >;
     listIncoming: FunctionReference<
       "query",
       "public",
-      { account_sid: string },
-      any
+      { account_sid: string; limit?: number },
+      Array<{
+        account_sid: string;
+        api_version: string;
+        body: string;
+        counterparty?: string;
+        date_created: string;
+        date_sent: string | null;
+        date_updated: string | null;
+        direction: string;
+        error_code: number | null;
+        error_message: string | null;
+        from: string;
+        messaging_service_sid: string | null;
+        num_media: string;
+        num_segments: string;
+        price: string | null;
+        price_unit: string | null;
+        sid: string;
+        status: string;
+        subresource_uris: { feedback?: string; media: string } | null;
+        to: string;
+        uri: string;
+      }>
+    >;
+    listOutgoing: FunctionReference<
+      "query",
+      "public",
+      { account_sid: string; limit?: number },
+      Array<{
+        account_sid: string;
+        api_version: string;
+        body: string;
+        counterparty?: string;
+        date_created: string;
+        date_sent: string | null;
+        date_updated: string | null;
+        direction: string;
+        error_code: number | null;
+        error_message: string | null;
+        from: string;
+        messaging_service_sid: string | null;
+        num_media: string;
+        num_segments: string;
+        price: string | null;
+        price_unit: string | null;
+        sid: string;
+        status: string;
+        subresource_uris: { feedback?: string; media: string } | null;
+        to: string;
+        uri: string;
+      }>
     >;
     updateStatus: FunctionReference<
       "mutation",
       "public",
-      { account_sid: string; auth_token: string; sid: string; status: string },
-      any
+      { account_sid: string; sid: string; status: string },
+      null
     >;
   };
   phone_numbers: {

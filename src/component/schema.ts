@@ -2,7 +2,6 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-
   messages: defineTable({
     account_sid: v.string(),
     api_version: v.string(),
@@ -22,16 +21,19 @@ export default defineSchema({
     price_unit: v.union(v.string(), v.null()),
     sid: v.string(),
     status: v.string(),
-    subresource_uris: v.union(v.object({ media: v.string(), feedback: v.optional(v.string()) }), v.null()),
+    subresource_uris: v.union(
+      v.object({ media: v.string(), feedback: v.optional(v.string()) }),
+      v.null()
+    ),
     to: v.string(),
     uri: v.string(),
   })
-  .index("by_sid", ["account_sid", "sid"])
-  .index("by_account_sid", ["account_sid"])
-  .index("by_account_sid_and_direction", ["account_sid", "direction"])
-  .index("by_to", ["account_sid", "to"])
-  .index("by_from", ["account_sid", "from"])
-  .index("by_counterparty", ["account_sid", "counterparty"]),
+    .index("by_sid", ["account_sid", "sid"])
+    .index("by_account_sid", ["account_sid"])
+    .index("by_account_sid_and_direction", ["account_sid", "direction"])
+    .index("by_to", ["account_sid", "to"])
+    .index("by_from", ["account_sid", "from"])
+    .index("by_counterparty", ["account_sid", "counterparty"]),
 
   phone_numbers: defineTable({
     account_sid: v.string(),
@@ -76,6 +78,6 @@ export default defineSchema({
     voice_method: v.string(),
     voice_url: v.string(),
   })
-  .index("by_phone_number", ["account_sid", "phone_number"])
-  .index("by_sid", ["account_sid", "sid"]),
+    .index("by_phone_number", ["account_sid", "phone_number"])
+    .index("by_sid", ["account_sid", "sid"]),
 });
