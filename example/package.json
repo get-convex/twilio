@@ -3,13 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "convex dev",
-    "predev": "convex dev --until-success && convex dashboard",
+    "dev": "convex dev --live-component-sources",
     "logs": "convex logs",
     "lint": "tsc -p convex && eslint convex"
   },
   "dependencies": {
-    "@get-convex/twilio": "file:../get-convex-twilio-0.0.6.tgz",
+    "@get-convex/twilio": "file:..",
     "convex": "^1.16.0-alpha.1"
   },
   "devDependencies": {
