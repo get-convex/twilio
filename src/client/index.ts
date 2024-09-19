@@ -56,6 +56,7 @@ export class Twilio<
           "npx convex env set TWILIO_AUTH_TOKEN=xxxxx"
       );
     }
+    this.default_from = options.default_from;
     this.http_prefix = options?.http_prefix ?? "/twilio";
     this.incomingMessageCallback = options?.incomingMessageCallback;
     this.defaultOutgoingMessageCallback =
