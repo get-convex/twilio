@@ -63,6 +63,11 @@ export class Twilio<
       options?.defaultOutgoingMessageCallback;
   }
 
+  /**
+   * Registers the routes for handling Twilio message status and incoming messages.
+   *
+   * @param http - The HTTP router to register routes on.
+   */
   registerRoutes(http: HttpRouter) {
     http.route({
       path: this.http_prefix + "/message-status",
@@ -107,7 +112,18 @@ export class Twilio<
       }),
     });
   }
-
+  /**
+   * Sends a message using the Twilio API.
+   *
+   * @param ctx - A Convex context for running the action.
+   * @param args - The arguments for sending the message.
+   * @param args.to - The recipient's phone number e.g. +14151234567.
+   * @param args.body - The body of the message.
+   * @param args.callback - An optional callback function to be called after successfully sending.
+   * @param args.from - The sender's phone number. If not provided, the default from number is used.
+   * @throws {Error} If the from number is missing and no default from number is set.
+   * @returns A promise that resolves with the result of the message creation action.
+   */
   async sendMessage(
     ctx: RunActionCtx,
     args: Expand<
@@ -138,6 +154,14 @@ export class Twilio<
     });
   }
 
+  /**
+   * Registers an incoming SMS handler for a Twilio phone number.
+   *
+   * @param ctx - The Convex function context.
+   * @param args - The arguments for registering the SMS handler.
+   * @param args.sid - The SID of the phone number to update.
+   * @returns A promise that resolves with the result of the action.
+   */
   async registerIncomingSmsHandler(ctx: RunActionCtx, args: { sid: string }) {
     return ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
       account_sid: this.account_sid,
@@ -148,6 +172,14 @@ export class Twilio<
     });
   }
 
+  /**
+   * Lists messages sent or received using this component.
+   *
+   * @param ctx - The Convex function context.
+   * @param args - Optional arguments for listing messages.
+   * @param args.limit - The maximum number of messages to retrieve.
+   * @returns A promise that resolves with the list of messages.
+   */
   async list(ctx: RunQueryCtx, args?: { limit?: number }) {
     return ctx.runQuery(this.componentApi.messages.list, {
       ...args,
@@ -155,6 +187,14 @@ export class Twilio<
     });
   }
 
+  /**
+   * Lists messages received using this component.
+   *
+   * @param ctx - The Convex function context.
+   * @param args - Optional arguments for listing messages.
+   * @param args.limit - The maximum number of messages to retrieve.
+   * @returns A promise that resolves with the list of messages.
+   */
   async listIncoming(ctx: RunQueryCtx, args?: { limit?: number }) {
     return ctx.runQuery(this.componentApi.messages.listIncoming, {
       ...args,
@@ -162,6 +202,14 @@ export class Twilio<
     });
   }
 
+  /**
+   * Lists messages sent using this component.
+   *
+   * @param ctx - The Convex function context.
+   * @param args - Optional arguments for listing messages.
+   * @param args.limit - The maximum number of messages to retrieve.
+   * @returns A promise that resolves with the list of messages.
+   */
   async listOutgoing(ctx: RunQueryCtx, args?: { limit?: number }) {
     return ctx.runQuery(this.componentApi.messages.listOutgoing, {
       ...args,
@@ -169,6 +217,14 @@ export class Twilio<
     });
   }
 
+  /**
+   * Retrieves a message by its Twilio SID.
+   *
+   * @param ctx - The Convex function context.
+   * @param args - The arguments for retrieving the message.
+   * @param args.sid - The SID of the message to retrieve.
+   * @returns A promise that resolves with the message details.
+   */
   async getMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
     return ctx.runQuery(this.componentApi.messages.getBySid, {
       account_sid: this.account_sid,
@@ -176,6 +232,15 @@ export class Twilio<
     });
   }
 
+  /**
+   * Retrieves messages sent to a specific phone number using the component.
+   *
+   * @param ctx - The Convex function context.
+   * @param args - The arguments for retrieving the messages.
+   * @param args.to - The recipient's phone number.
+   * @param args.limit - Optional. The maximum number of messages to retrieve.
+   * @returns A promise that resolves with the list of messages.
+   */
   async getMessagesTo(ctx: RunQueryCtx, args: { to: string; limit?: number }) {
     return ctx.runQuery(this.componentApi.messages.getTo, {
       ...args,
@@ -183,6 +248,15 @@ export class Twilio<
     });
   }
 
+  /**
+   * Retrieves messages received from a specific phone number using the component.
+   *
+   * @param ctx - The Convex function context.
+   * @param args - The arguments for retrieving the messages.
+   * @param args.from - The sender's phone number.
+   * @param args.limit - Optional. The maximum number of messages to retrieve.
+   * @returns A promise that resolves with the list of messages.
+   */
   async getMessagesFrom(
     ctx: RunQueryCtx,
     args: { from: string; limit?: number }
@@ -193,6 +267,15 @@ export class Twilio<
     });
   }
 
+  /**
+   * Retrieves messages sent to or received from a specific phone number using the component.
+   *
+   * @param ctx - The Convex function context.
+   * @param args - The arguments for retrieving the messages.
+   * @param args.counterparty - The recipient's or sender's phone number.
+   * @param args.limit - Optional. The maximum number of messages to retrieve.
+   * @returns A promise that resolves with the list of messages.
+   */
   async getMessagesByCounterparty(
     ctx: RunQueryCtx,
     args: { counterparty: string; limit?: number }
