@@ -14,7 +14,7 @@ export const sendSms = internalAction({
   handler: async (ctx, args) => {
     return await twilio.sendMessage(ctx, {
       to: "+14151234567",
-      body: "Hello world",
+      body: "Hello, world!",
     });
   },
 });
