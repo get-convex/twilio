@@ -1,6 +1,6 @@
 {
   "name": "@convex-dev/twilio",
-  "version": "0.0.9-alpha.0",
+  "version": "0.1.0",
   "type": "module",
   "repository": "github:get-convex/twilio",
   "homepage": "https://github.com/get-convex/twilio#readme",
