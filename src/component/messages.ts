@@ -45,44 +45,7 @@ export const create = action({
       }
     );
     // store some properties as fields and the rest as a nested object
-    const {
-        account_sid,
-        api_version,
-        body,
-        counterparty,
-        date_created,
-        date_sent,
-        date_updated,
-        direction,
-        error_code,
-        error_message,
-        from,
-        messaging_service_sid,
-        sid,
-        status,
-        to,
-        uri,
-        ...rest
-    } = message;
-    const databaseMessage = {
-        account_sid,
-        api_version,
-        body,
-        counterparty,
-        date_created,
-        date_sent,
-        date_updated,
-        direction,
-        error_code,
-        error_message,
-        from,
-        messaging_service_sid,
-        sid,
-        status,
-        to,
-        uri,
-        rest,
-    }
+    const databaseMessage = convertToDatabaseMessage(message);
     return ctx.runMutation(internal.messages.insert, {
       message: databaseMessage,
       callback: args.callback,
@@ -275,12 +238,54 @@ export const getFromTwilioBySidAndInsert = action({
       {},
       "GET"
     );
+    const databaseMessage = convertToDatabaseMessage(message);
     return ctx.runMutation(internal.messages.insert, {
-      message,
+      message: databaseMessage,
       callback: args.incomingMessageCallback,
     });
   },
 });
+
+function convertToDatabaseMessage(message: any) {
+    const {
+        account_sid,
+        api_version,
+        body,
+        counterparty,
+        date_created,
+        date_sent,
+        date_updated,
+        direction,
+        error_code,
+        error_message,
+        from,
+        messaging_service_sid,
+        sid,
+        status,
+        to,
+        uri,
+        ...rest
+    } = message;
+    return {
+        account_sid,
+        api_version,
+        body,
+        counterparty,
+        date_created,
+        date_sent,
+        date_updated,
+        direction,
+        error_code,
+        error_message,
+        from,
+        messaging_service_sid,
+        sid,
+        status,
+        to,
+        uri,
+        rest,
+    };
+}
 
 function takeOrCollectFields(
   query: Query<NamedTableInfo<DataModel, "messages">>,
