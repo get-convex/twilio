@@ -44,8 +44,10 @@ export const create = action({
         StatusCallback: args.status_callback,
       }
     );
+    // store some properties as fields and the rest as a nested object
+    const databaseMessage = convertToDatabaseMessage(message);
     return ctx.runMutation(internal.messages.insert, {
-      message,
+      message: databaseMessage,
       callback: args.callback,
     });
   },
@@ -236,12 +238,64 @@ export const getFromTwilioBySidAndInsert = action({
       {},
       "GET"
     );
+    const databaseMessage = convertToDatabaseMessage(message);
     return ctx.runMutation(internal.messages.insert, {
-      message,
+      message: databaseMessage,
       callback: args.incomingMessageCallback,
     });
   },
 });
+
+function convertToDatabaseMessage(message: any) {
+    const {
+        account_sid,
+        api_version,
+        body,
+        counterparty,
+        date_created,
+        date_sent,
+        date_updated,
+        direction,
+        error_code,
+        error_message,
+        from,
+        messaging_service_sid,
+        num_media,
+        num_segments,
+        price,
+        price_unit,
+        sid,
+        status,
+        subresource_uris,
+        to,
+        uri,
+        ...rest
+    } = message;
+    return {
+        account_sid,
+        api_version,
+        body,
+        counterparty,
+        date_created,
+        date_sent,
+        date_updated,
+        direction,
+        error_code,
+        error_message,
+        from,
+        messaging_service_sid,
+        num_media,
+        num_segments,
+        price,
+        price_unit,
+        sid,
+        status,
+        subresource_uris,
+        to,
+        uri,
+        rest,
+    };
+}
 
 function takeOrCollectFields(
   query: Query<NamedTableInfo<DataModel, "messages">>,

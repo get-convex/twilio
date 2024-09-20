@@ -27,6 +27,7 @@ export default defineSchema({
     ),
     to: v.string(),
     uri: v.string(),
+    rest: v.optional(v.any()),
   })
     .index("by_sid", ["account_sid", "sid"])
     .index("by_account_sid", ["account_sid"])
