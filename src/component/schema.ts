@@ -15,8 +15,16 @@ export default defineSchema({
     error_message: v.union(v.string(), v.null()),
     from: v.string(),
     messaging_service_sid: v.union(v.string(), v.null()),
+    num_media: v.string(),
+    num_segments: v.string(),
+    price: v.union(v.string(), v.null()),
+    price_unit: v.union(v.string(), v.null()),
     sid: v.string(),
     status: v.string(),
+    subresource_uris: v.union(
+      v.object({ media: v.string(), feedback: v.optional(v.string()) }),
+      v.null()
+    ),
     to: v.string(),
     uri: v.string(),
     rest: v.optional(v.any()),

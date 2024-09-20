@@ -178,9 +178,14 @@ export declare const components: {
           error_message: string | null;
           from: string;
           messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
           rest?: any;
           sid: string;
           status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
         }
@@ -202,9 +207,14 @@ export declare const components: {
           error_message: string | null;
           from: string;
           messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
           rest?: any;
           sid: string;
           status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
         }>
@@ -226,9 +236,14 @@ export declare const components: {
           error_message: string | null;
           from: string;
           messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
           rest?: any;
           sid: string;
           status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
         } | null
@@ -250,9 +265,14 @@ export declare const components: {
           error_message: string | null;
           from: string;
           messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
           rest?: any;
           sid: string;
           status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
         }>
@@ -279,9 +299,14 @@ export declare const components: {
           error_message: string | null;
           from: string;
           messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
           rest?: any;
           sid: string;
           status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
         }
@@ -303,9 +328,14 @@ export declare const components: {
           error_message: string | null;
           from: string;
           messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
           rest?: any;
           sid: string;
           status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
         }>
@@ -327,9 +357,14 @@ export declare const components: {
           error_message: string | null;
           from: string;
           messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
           rest?: any;
           sid: string;
           status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
         }>
@@ -351,9 +386,14 @@ export declare const components: {
           error_message: string | null;
           from: string;
           messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
           rest?: any;
           sid: string;
           status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
         }>
@@ -375,9 +415,14 @@ export declare const components: {
           error_message: string | null;
           from: string;
           messaging_service_sid: string | null;
+          num_media: string;
+          num_segments: string;
+          price: string | null;
+          price_unit: string | null;
           rest?: any;
           sid: string;
           status: string;
+          subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
         }>
