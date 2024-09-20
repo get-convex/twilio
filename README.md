@@ -2,6 +2,23 @@
 
 Send and receive SMS messages in your Convex app using Twilio.
 
+```ts
+import Twilio from "@convex-dev/twilio";
+import { components } from "./_generated/server.js";
+
+export const twilio = new Twilio(components.twilio, {
+  default_from: process.env.TWILIO_PHONE_NUMBER!,
+});
+
+export const sendSms = internalAction({
+  handler: async (ctx, args) => {
+    return await twilio.sendMessage(ctx, {
+      to: "+14151234567",
+      body: "Hello world",
+    });
+  },
+});
+```
 ## Prerequisites
 
 ### Twilio Phone Number
