@@ -5,7 +5,7 @@ import {
   components,
   internalMutation,
 } from "./_generated/server.js";
-import { Twilio, messageValidator } from "@get-convex/twilio";
+import { Twilio, messageValidator } from "@convex-dev/twilio";
 import { internal } from "./_generated/api.js";
 
 export const twilio = new Twilio(components.twilio, {
