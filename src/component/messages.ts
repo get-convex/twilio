@@ -44,8 +44,47 @@ export const create = action({
         StatusCallback: args.status_callback,
       }
     );
+    // store some properties as fields and the rest as a nested object
+    const {
+        account_sid,
+        api_version,
+        body,
+        counterparty,
+        date_created,
+        date_sent,
+        date_updated,
+        direction,
+        error_code,
+        error_message,
+        from,
+        messaging_service_sid,
+        sid,
+        status,
+        to,
+        uri,
+        ...rest
+    } = message;
+    const databaseMessage = {
+        account_sid,
+        api_version,
+        body,
+        counterparty,
+        date_created,
+        date_sent,
+        date_updated,
+        direction,
+        error_code,
+        error_message,
+        from,
+        messaging_service_sid,
+        sid,
+        status,
+        to,
+        uri,
+        rest,
+    }
     return ctx.runMutation(internal.messages.insert, {
-      message,
+      message: databaseMessage,
       callback: args.callback,
     });
   },
