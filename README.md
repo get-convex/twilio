@@ -125,7 +125,7 @@ To receive messages, you will associate a webhook handler provided by the compon
 The webhook handler is mounted at
 
 ```
-YOUR_CONVEX_SITE_URL/incoming-message
+YOUR_CONVEX_SITE_URL/twilio/incoming-message
 ```
 
 You can associate it with your Twilio phone number in two ways:
