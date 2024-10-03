@@ -7,7 +7,7 @@ Send and receive SMS messages in your Convex app using Twilio.
 
 ```ts
 import Twilio from "@convex-dev/twilio";
-import { components } from "./_generated/server.js";
+import { components } from "./_generated/api";
 
 export const twilio = new Twilio(components.twilio, {
   default_from: process.env.TWILIO_PHONE_NUMBER!,
@@ -45,9 +45,9 @@ npm install @convex-dev/twilio
 Create a `convex.config.ts` file in your app's `convex/` folder and install the component by calling `use`:
 
 ```ts
-// convex/convex.config.js
+// convex/convex.config.ts
 import { defineApp } from "convex/server";
-import twilio from "@convex-dev/twilio/convex.config.js";
+import twilio from "@convex-dev/twilio/convex.config";
 
 const app = defineApp();
 app.use(twilio);
@@ -67,7 +67,7 @@ Instantiate a Twilio Component client in a file in your app's `convex/` folder:
 ```ts
 // convex/example.ts
 import Twilio from "@convex-dev/twilio";
-import { components } from "./_generated/server.js";
+import { components } from "./_generated/api";
 
 export const twilio = new Twilio(components.twilio, {
   // optionally pass in the default "from" phone number you'll be using
@@ -163,7 +163,9 @@ const twilio = new Twilio(components.twilio, {
 twilio.incomingMessageCallback = internal.example.handleIncomingMessage;
 
 export const handleIncomingMessage = internalMutation({
-  args: messageValidator,
+  args: {
+    message: messageValidator,
+  },
   handler: async (ctx, message) => {
     // Use ctx here to update the database or schedule other actions.
     // This is in the same transaction as the component's message insertion.
