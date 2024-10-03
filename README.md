@@ -163,7 +163,9 @@ const twilio = new Twilio(components.twilio, {
 twilio.incomingMessageCallback = internal.example.handleIncomingMessage;
 
 export const handleIncomingMessage = internalMutation({
-  args: messageValidator,
+  args: {
+    message: messageValidator,
+  },
   handler: async (ctx, message) => {
     // Use ctx here to update the database or schedule other actions.
     // This is in the same transaction as the component's message insertion.
