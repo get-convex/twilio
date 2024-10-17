@@ -26,12 +26,12 @@ export type MessageHandler = FunctionReference<
 >;
 
 export class Twilio<
-  From extends { default_from?: string } | Record<string, never>,
+  From extends { defaultFrom?: string } | Record<string, never>,
 > {
-  public readonly account_sid: string;
-  public readonly auth_token: string;
-  public readonly http_prefix: string;
-  public readonly default_from?: From["default_from"];
+  public readonly accountSid: string;
+  public readonly authToken: string;
+  public readonly httpPrefix: string;
+  public readonly defaultFrom?: From["defaultFrom"];
   public incomingMessageCallback?: MessageHandler;
   public defaultOutgoingMessageCallback?: MessageHandler;
 
@@ -40,24 +40,24 @@ export class Twilio<
     options: {
       TWILIO_ACCOUNT_SID?: string;
       TWILIO_AUTH_TOKEN?: string;
-      http_prefix?: string;
+      httpPrefix?: string;
       incomingMessageCallback?: MessageHandler;
       defaultOutgoingMessageCallback?: MessageHandler;
-    } & From
+    } & From,
   ) {
-    this.account_sid =
+    this.accountSid =
       options?.TWILIO_ACCOUNT_SID ?? process.env.TWILIO_ACCOUNT_SID!;
-    this.auth_token =
+    this.authToken =
       options?.TWILIO_AUTH_TOKEN ?? process.env.TWILIO_AUTH_TOKEN!;
-    if (!this.account_sid || !this.auth_token) {
+    if (!this.accountSid || !this.authToken) {
       throw new Error(
         "Missing Twilio credentials\n\n" +
           "npx convex env set TWILIO_ACCOUNT_SID=ACxxxxx\n" +
-          "npx convex env set TWILIO_AUTH_TOKEN=xxxxx"
+          "npx convex env set TWILIO_AUTH_TOKEN=xxxxx",
       );
     }
-    this.default_from = options.default_from;
-    this.http_prefix = options?.http_prefix ?? "/twilio";
+    this.defaultFrom = options.defaultFrom;
+    this.httpPrefix = options?.httpPrefix ?? "/twilio";
     this.incomingMessageCallback = options?.incomingMessageCallback;
     this.defaultOutgoingMessageCallback =
       options?.defaultOutgoingMessageCallback;
@@ -70,7 +70,7 @@ export class Twilio<
    */
   registerRoutes(http: HttpRouter) {
     http.route({
-      path: this.http_prefix + "/message-status",
+      path: this.httpPrefix + "/message-status",
       method: "POST",
       handler: httpActionGeneric(async (ctx, request) => {
         const requestValues = new URLSearchParams(await request.text());
@@ -79,7 +79,7 @@ export class Twilio<
 
         if (sid && status) {
           await ctx.runMutation(this.componentApi.messages.updateStatus, {
-            account_sid: this.account_sid,
+            account_sid: this.accountSid,
             sid: sid ?? "",
             status: status ?? "",
           });
@@ -91,7 +91,7 @@ export class Twilio<
     });
 
     http.route({
-      path: this.http_prefix + "/incoming-message",
+      path: this.httpPrefix + "/incoming-message",
       method: "POST",
       handler: httpActionGeneric(async (ctx, request) => {
         const requestValues = new URLSearchParams(await request.text());
@@ -99,13 +99,13 @@ export class Twilio<
         await ctx.runAction(
           this.componentApi.messages.getFromTwilioBySidAndInsert,
           {
-            account_sid: this.account_sid,
-            auth_token: this.auth_token,
+            account_sid: this.accountSid,
+            auth_token: this.authToken,
             sid: requestValues.get("SmsSid") ?? "",
             incomingMessageCallback:
               this.incomingMessageCallback &&
               (await createFunctionHandle(this.incomingMessageCallback)),
-          }
+          },
         );
 
         return new Response(null, { status: 200 });
@@ -131,22 +131,23 @@ export class Twilio<
         to: string;
         body: string;
         callback?: MessageHandler;
-      } & (From["default_from"] extends string
+      } & (From["defaultFrom"] extends string
         ? { from?: string }
         : { from: string })
-    >
+    >,
   ) {
-    if (!args.from && !this.default_from) {
+    const from = args.from ?? this.defaultFrom;
+    if (!from) {
       throw new Error("Missing from number");
     }
     return ctx.runAction(this.componentApi.messages.create, {
-      from: args.from ?? this.default_from!,
+      from,
       to: args.to,
       body: args.body,
-      account_sid: this.account_sid,
-      auth_token: this.auth_token,
+      account_sid: this.accountSid,
+      auth_token: this.authToken,
       status_callback:
-        process.env.CONVEX_SITE_URL + this.http_prefix + "/message-status",
+        process.env.CONVEX_SITE_URL + this.httpPrefix + "/message-status",
       callback: args.callback
         ? await createFunctionHandle(args.callback)
         : this.defaultOutgoingMessageCallback &&
@@ -164,11 +165,11 @@ export class Twilio<
    */
   async registerIncomingSmsHandler(ctx: RunActionCtx, args: { sid: string }) {
     return ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
-      account_sid: this.account_sid,
-      auth_token: this.auth_token,
+      account_sid: this.accountSid,
+      auth_token: this.authToken,
       sid: args.sid,
       sms_url:
-        process.env.CONVEX_SITE_URL + this.http_prefix + "/incoming-message",
+        process.env.CONVEX_SITE_URL + this.httpPrefix + "/incoming-message",
     });
   }
 
@@ -183,7 +184,7 @@ export class Twilio<
   async list(ctx: RunQueryCtx, args?: { limit?: number }) {
     return ctx.runQuery(this.componentApi.messages.list, {
       ...args,
-      account_sid: this.account_sid,
+      account_sid: this.accountSid,
     });
   }
 
@@ -198,7 +199,7 @@ export class Twilio<
   async listIncoming(ctx: RunQueryCtx, args?: { limit?: number }) {
     return ctx.runQuery(this.componentApi.messages.listIncoming, {
       ...args,
-      account_sid: this.account_sid,
+      account_sid: this.accountSid,
     });
   }
 
@@ -213,7 +214,7 @@ export class Twilio<
   async listOutgoing(ctx: RunQueryCtx, args?: { limit?: number }) {
     return ctx.runQuery(this.componentApi.messages.listOutgoing, {
       ...args,
-      account_sid: this.account_sid,
+      account_sid: this.accountSid,
     });
   }
 
@@ -227,7 +228,7 @@ export class Twilio<
    */
   async getMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
     return ctx.runQuery(this.componentApi.messages.getBySid, {
-      account_sid: this.account_sid,
+      account_sid: this.accountSid,
       sid: args.sid,
     });
   }
@@ -244,7 +245,7 @@ export class Twilio<
   async getMessagesTo(ctx: RunQueryCtx, args: { to: string; limit?: number }) {
     return ctx.runQuery(this.componentApi.messages.getTo, {
       ...args,
-      account_sid: this.account_sid,
+      account_sid: this.accountSid,
     });
   }
 
@@ -259,11 +260,11 @@ export class Twilio<
    */
   async getMessagesFrom(
     ctx: RunQueryCtx,
-    args: { from: string; limit?: number }
+    args: { from: string; limit?: number },
   ) {
     return ctx.runQuery(this.componentApi.messages.getFrom, {
       ...args,
-      account_sid: this.account_sid,
+      account_sid: this.accountSid,
     });
   }
 
@@ -278,11 +279,11 @@ export class Twilio<
    */
   async getMessagesByCounterparty(
     ctx: RunQueryCtx,
-    args: { counterparty: string; limit?: number }
+    args: { counterparty: string; limit?: number },
   ) {
     return ctx.runQuery(this.componentApi.messages.getByCounterparty, {
       ...args,
-      account_sid: this.account_sid,
+      account_sid: this.accountSid,
     });
   }
 }
@@ -324,7 +325,7 @@ declare global {
 
 if (typeof Convex === "undefined") {
   throw new Error(
-    "this is Convex backend code, but it's running somewhere else!"
+    "this is Convex backend code, but it's running somewhere else!",
   );
 }
 type componentApiType = UseApi<typeof api>;

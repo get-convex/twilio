@@ -1,14 +1,10 @@
 import { v } from "convex/values";
-import {
-  internalAction,
-  query,
-  internalMutation,
-} from "./_generated/server";
+import { internalAction, query, internalMutation } from "./_generated/server";
 import { Twilio, messageValidator } from "@convex-dev/twilio";
 import { internal, components } from "./_generated/api";
 
 export const twilio = new Twilio(components.twilio, {
-  default_from: process.env.TWILIO_PHONE_NUMBER!,
+  defaultFrom: process.env.TWILIO_PHONE_NUMBER!,
 });
 twilio.incomingMessageCallback = internal.example.handleMessage;
 twilio.defaultOutgoingMessageCallback = internal.example.handleMessage;
