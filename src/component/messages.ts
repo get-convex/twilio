@@ -42,7 +42,7 @@ export const create = action({
         To: args.to,
         Body: args.body,
         StatusCallback: args.status_callback,
-      }
+      },
     );
     // store some properties as fields and the rest as a nested object
     const databaseMessage = convertToDatabaseMessage(message);
@@ -83,9 +83,9 @@ export const list = query({
       ctx.db
         .query("messages")
         .withIndex("by_account_sid", (q) =>
-          q.eq("account_sid", args.account_sid)
+          q.eq("account_sid", args.account_sid),
         ),
-      args.limit
+      args.limit,
     );
   },
 });
@@ -101,9 +101,9 @@ export const listIncoming = query({
       ctx.db
         .query("messages")
         .withIndex("by_account_sid_and_direction", (q) =>
-          q.eq("account_sid", args.account_sid).eq("direction", "inbound")
+          q.eq("account_sid", args.account_sid).eq("direction", "inbound"),
         ),
-      args.limit
+      args.limit,
     );
   },
 });
@@ -118,9 +118,9 @@ export const listOutgoing = query({
       ctx.db
         .query("messages")
         .withIndex("by_account_sid_and_direction", (q) =>
-          q.eq("account_sid", args.account_sid).eq("direction", "outbound-api")
+          q.eq("account_sid", args.account_sid).eq("direction", "outbound-api"),
         ),
-      args.limit
+      args.limit,
     );
   },
 });
@@ -135,7 +135,7 @@ export const getBySid = query({
     const message = await ctx.db
       .query("messages")
       .withIndex("by_sid", (q) =>
-        q.eq("account_sid", args.account_sid).eq("sid", args.sid)
+        q.eq("account_sid", args.account_sid).eq("sid", args.sid),
       )
       .first();
     return message && withoutSystemFields(message);
@@ -154,9 +154,9 @@ export const getTo = query({
       ctx.db
         .query("messages")
         .withIndex("by_to", (q) =>
-          q.eq("account_sid", args.account_sid).eq("to", args.to)
+          q.eq("account_sid", args.account_sid).eq("to", args.to),
         ),
-      args.limit
+      args.limit,
     );
   },
 });
@@ -173,9 +173,9 @@ export const getFrom = query({
       ctx.db
         .query("messages")
         .withIndex("by_from", (q) =>
-          q.eq("account_sid", args.account_sid).eq("from", args.from)
+          q.eq("account_sid", args.account_sid).eq("from", args.from),
         ),
-      args.limit
+      args.limit,
     );
   },
 });
@@ -194,9 +194,9 @@ export const getByCounterparty = query({
         .withIndex("by_counterparty", (q) =>
           q
             .eq("account_sid", args.account_sid)
-            .eq("counterparty", args.counterparty)
+            .eq("counterparty", args.counterparty),
         ),
-      args.limit
+      args.limit,
     );
   },
 });
@@ -212,7 +212,7 @@ export const updateStatus = mutation({
     const message = await ctx.db
       .query("messages")
       .withIndex("by_sid", (q) =>
-        q.eq("account_sid", args.account_sid).eq("sid", args.sid)
+        q.eq("account_sid", args.account_sid).eq("sid", args.sid),
       )
       .first();
     if (!message) {
@@ -236,7 +236,7 @@ export const getFromTwilioBySidAndInsert = action({
       args.account_sid,
       args.auth_token,
       {},
-      "GET"
+      "GET",
     );
     const databaseMessage = convertToDatabaseMessage(message);
     return ctx.runMutation(internal.messages.insert, {
@@ -300,7 +300,7 @@ function convertToDatabaseMessage(message: any) {
 
 async function takeOrCollectFields(
   query: Query<NamedTableInfo<DataModel, "messages">>,
-  limit: number | undefined
+  limit: number | undefined,
 ): Promise<Message[]> {
   let messagesPromise;
   if (limit) {

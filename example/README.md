@@ -1,3 +1,3 @@
 # Example app
-This app uses the Twilio component.
 
+This app uses the Twilio component.
