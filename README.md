@@ -9,7 +9,7 @@
 Send and receive SMS messages in your Convex app using Twilio.
 
 ```ts
-import Twilio from "@convex-dev/twilio";
+import { Twilio } from "@convex-dev/twilio";
 import { components } from "./_generated/api";
 
 export const twilio = new Twilio(components.twilio, {
@@ -70,7 +70,7 @@ Instantiate a Twilio Component client in a file in your app's `convex/` folder:
 
 ```ts
 // convex/example.ts
-import Twilio from "@convex-dev/twilio";
+import { Twilio } from "@convex-dev/twilio";
 import { components } from "./_generated/api";
 
 export const twilio = new Twilio(components.twilio, {
