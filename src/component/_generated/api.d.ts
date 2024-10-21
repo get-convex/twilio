@@ -63,6 +63,7 @@ export type Mounts = {
         num_segments: string;
         price: string | null;
         price_unit: string | null;
+        rest?: any;
         sid: string;
         status: string;
         subresource_uris: { feedback?: string; media: string } | null;
@@ -91,6 +92,7 @@ export type Mounts = {
         num_segments: string;
         price: string | null;
         price_unit: string | null;
+        rest?: any;
         sid: string;
         status: string;
         subresource_uris: { feedback?: string; media: string } | null;
@@ -119,6 +121,7 @@ export type Mounts = {
         num_segments: string;
         price: string | null;
         price_unit: string | null;
+        rest?: any;
         sid: string;
         status: string;
         subresource_uris: { feedback?: string; media: string } | null;
@@ -147,6 +150,7 @@ export type Mounts = {
         num_segments: string;
         price: string | null;
         price_unit: string | null;
+        rest?: any;
         sid: string;
         status: string;
         subresource_uris: { feedback?: string; media: string } | null;
@@ -180,6 +184,7 @@ export type Mounts = {
         num_segments: string;
         price: string | null;
         price_unit: string | null;
+        rest?: any;
         sid: string;
         status: string;
         subresource_uris: { feedback?: string; media: string } | null;
@@ -208,6 +213,7 @@ export type Mounts = {
         num_segments: string;
         price: string | null;
         price_unit: string | null;
+        rest?: any;
         sid: string;
         status: string;
         subresource_uris: { feedback?: string; media: string } | null;
@@ -236,6 +242,7 @@ export type Mounts = {
         num_segments: string;
         price: string | null;
         price_unit: string | null;
+        rest?: any;
         sid: string;
         status: string;
         subresource_uris: { feedback?: string; media: string } | null;
@@ -264,6 +271,7 @@ export type Mounts = {
         num_segments: string;
         price: string | null;
         price_unit: string | null;
+        rest?: any;
         sid: string;
         status: string;
         subresource_uris: { feedback?: string; media: string } | null;
@@ -292,6 +300,7 @@ export type Mounts = {
         num_segments: string;
         price: string | null;
         price_unit: string | null;
+        rest?: any;
         sid: string;
         status: string;
         subresource_uris: { feedback?: string; media: string } | null;
@@ -334,5 +343,7 @@ export declare const internal: FilterApi<
   typeof fullApiWithMounts,
   FunctionReference<any, "internal">
 >;
+
+export declare const components: {};
 
 /* prettier-ignore-end */
