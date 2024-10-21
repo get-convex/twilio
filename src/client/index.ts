@@ -108,7 +108,13 @@ export class Twilio<
           },
         );
 
-        return new Response(null, { status: 200 });
+        const emptyResponseTwiML = `
+<?xml version="1.0" encoding="UTF-8"?>
+<Response></Response>`;
+
+        return new Response(emptyResponseTwiML, { status: 200, headers: {
+          'Content-Type': 'application/xml',
+        } });
       }),
     });
   }
