@@ -174,6 +174,11 @@ export const handleIncomingMessage = internalMutation({
 });
 ```
 
+If the `handleIncomingMessage` callback throws an error, the message will not be
+saved and the webhook will throw an error. Twilio
+[does not retry webhook requests](https://www.twilio.com/docs/usage/security/availability-reliability),
+but you can replay them manually from the Twilio "Error logs" console.
+
 ## Querying Messages
 
 To list all the mssages, use the `list` method in your Convex function.
