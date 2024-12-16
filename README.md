@@ -2,8 +2,6 @@
 
 [![npm version](https://badge.fury.io/js/@convex-dev%2Ftwilio.svg)](https://badge.fury.io/js/@convex-dev%2Ftwilio)
 
-**Note: Convex Components are currently in beta.**
-
 <!-- START: Include on https://convex.dev/components -->
 
 Send and receive SMS messages in your Convex app using Twilio.
