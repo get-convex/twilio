@@ -52,13 +52,18 @@
     "convex": "~1.16.5 || >=1.17.0 <1.35.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.1",
-    "@types/node": "^18.17.0",
-    "eslint": "^9.9.1",
-    "globals": "^15.9.0",
-    "prettier": "3.2.5",
-    "typescript": "~5.0.3",
-    "typescript-eslint": "^8.4.0"
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.38.0",
+    "@types/node": "^22.18.13",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
+    "convex-test": "^0.0.38",
+    "eslint": "^9.38.0",
+    "globals": "^16.4.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2",
+    "vitest": "^3.2.4"
   },
   "main": "./dist/commonjs/client/index.js",
   "types": "./dist/commonjs/client/index.d.ts",
