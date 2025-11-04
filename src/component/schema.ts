@@ -23,7 +23,7 @@ export default defineSchema({
     status: v.string(),
     subresource_uris: v.union(
       v.object({ media: v.string(), feedback: v.optional(v.string()) }),
-      v.null(),
+      v.null()
     ),
     to: v.string(),
     uri: v.string(),

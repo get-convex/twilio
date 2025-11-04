@@ -25,7 +25,7 @@ export const create = action({
       path,
       args.account_sid,
       args.auth_token,
-      body,
+      body
     );
     const id = await ctx.runMutation(internal.phone_numbers.insert, {
       phone_number: data,
@@ -66,13 +66,13 @@ export const get = internalQuery({
       _id: v.id("phone_numbers"),
       _creationTime: v.number(),
     }),
-    v.null(),
+    v.null()
   ),
   handler: async (ctx, args) => {
     return await ctx.db
       .query("phone_numbers")
       .withIndex("by_sid", (q) =>
-        q.eq("account_sid", args.account_sid).eq("sid", args.sid),
+        q.eq("account_sid", args.account_sid).eq("sid", args.sid)
       )
       .first();
   },
@@ -89,7 +89,7 @@ export const queryByPhoneNumber = internalQuery({
       _id: v.id("phone_numbers"),
       _creationTime: v.number(),
     }),
-    v.null(),
+    v.null()
   ),
   handler: async (ctx, args) => {
     return await ctx.db
@@ -97,7 +97,7 @@ export const queryByPhoneNumber = internalQuery({
       .withIndex("by_phone_number", (q) =>
         q
           .eq("account_sid", args.account_sid)
-          .eq("phone_number", args.phone_number),
+          .eq("phone_number", args.phone_number)
       )
       .first();
   },
@@ -124,7 +124,7 @@ export const updateSmsUrl = action({
         args.account_sid,
         args.auth_token,
         {},
-        "GET",
+        "GET"
       );
       console.log("Inserting into table");
       convexId = await ctx.runMutation(internal.phone_numbers.insert, {
@@ -141,7 +141,7 @@ export const updateSmsUrl = action({
       args.account_sid,
       args.auth_token,
       body,
-      "POST",
+      "POST"
     );
     await ctx.runMutation(internal.phone_numbers.patch, {
       convexId,
@@ -167,11 +167,11 @@ export const getByPhoneNumber = internalAction({
       {
         phone_number: args.phone_number,
         account_sid: args.account_sid,
-      },
+      }
     );
     if (!phone_number) {
       console.log(
-        `Phone number ${args.phone_number} not found in table - fetching from Twilio`,
+        `Phone number ${args.phone_number} not found in table - fetching from Twilio`
       );
       const phone_number = encodeURIComponent(args.phone_number);
       const path = `IncomingPhoneNumbers.json?PhoneNumber=${phone_number}`;
@@ -180,7 +180,7 @@ export const getByPhoneNumber = internalAction({
         args.account_sid,
         args.auth_token,
         {},
-        "GET",
+        "GET"
       );
       if (data.incoming_phone_numbers.length === 0) {
         throw new Error("Phone number not found");
