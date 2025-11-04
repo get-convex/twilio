@@ -41,7 +41,7 @@ export class Twilio<
       httpPrefix?: string;
       incomingMessageCallback?: MessageHandler;
       defaultOutgoingMessageCallback?: MessageHandler;
-    } & From
+    } & From,
   ) {
     this.accountSid =
       options?.TWILIO_ACCOUNT_SID ?? process.env.TWILIO_ACCOUNT_SID!;
@@ -51,7 +51,7 @@ export class Twilio<
       throw new Error(
         "Missing Twilio credentials\n\n" +
           "npx convex env set TWILIO_ACCOUNT_SID=ACxxxxx\n" +
-          "npx convex env set TWILIO_AUTH_TOKEN=xxxxx"
+          "npx convex env set TWILIO_AUTH_TOKEN=xxxxx",
       );
     }
     this.defaultFrom = options.defaultFrom;
@@ -103,7 +103,7 @@ export class Twilio<
             incomingMessageCallback:
               this.incomingMessageCallback &&
               (await createFunctionHandle(this.incomingMessageCallback)),
-          }
+          },
         );
 
         const emptyResponseTwiML = `
@@ -141,7 +141,7 @@ export class Twilio<
       } & (From["defaultFrom"] extends string
         ? { from?: string }
         : { from: string })
-    >
+    >,
   ) {
     const from = args.from ?? this.defaultFrom;
     if (!from) {
@@ -267,7 +267,7 @@ export class Twilio<
    */
   async getMessagesFrom(
     ctx: RunQueryCtx,
-    args: { from: string; limit?: number }
+    args: { from: string; limit?: number },
   ) {
     return ctx.runQuery(this.componentApi.messages.getFrom, {
       ...args,
@@ -286,7 +286,7 @@ export class Twilio<
    */
   async getMessagesByCounterparty(
     ctx: RunQueryCtx,
-    args: { counterparty: string; limit?: number }
+    args: { counterparty: string; limit?: number },
   ) {
     return ctx.runQuery(this.componentApi.messages.getByCounterparty, {
       ...args,
@@ -303,7 +303,7 @@ declare global {
 
 if (typeof Convex === "undefined") {
   throw new Error(
-    "this is Convex backend code, but it's running somewhere else!"
+    "this is Convex backend code, but it's running somewhere else!",
   );
 }
 

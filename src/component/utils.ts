@@ -3,7 +3,7 @@ export const twilioRequest = async function (
   account_sid: string,
   auth_token: string,
   body: Record<string, string>,
-  method: "POST" | "GET" = "POST"
+  method: "POST" | "GET" = "POST",
 ) {
   const url = `https://api.twilio.com/2010-04-01/Accounts/${account_sid}/${path}`;
   const auth = btoa(`${account_sid}:${auth_token}`);
