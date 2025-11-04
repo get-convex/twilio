@@ -246,7 +246,6 @@ export const getFromTwilioBySidAndInsert = action({
   },
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertToDatabaseMessage(message: any) {
   const {
     account_sid,

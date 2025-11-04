@@ -3,9 +3,7 @@
 import {
   createFunctionHandle,
   type Expand,
-  type FunctionHandle,
   type FunctionReference,
-  type FunctionType,
   type GenericActionCtx,
   type GenericDataModel,
   type GenericQueryCtx,
