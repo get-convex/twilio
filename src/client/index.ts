@@ -2,17 +2,17 @@
 
 import {
   createFunctionHandle,
-  Expand,
-  FunctionHandle,
-  FunctionReference,
-  FunctionType,
-  GenericActionCtx,
-  GenericDataModel,
-  GenericQueryCtx,
+  type Expand,
+  type FunctionHandle,
+  type FunctionReference,
+  type FunctionType,
+  type GenericActionCtx,
+  type GenericDataModel,
+  type GenericQueryCtx,
   httpActionGeneric,
   HttpRouter,
 } from "convex/server";
-import { Infer } from "convex/values";
+import type { Infer } from "convex/values";
 import schema from "../component/schema.js";
 import type { ComponentApi } from "../component/_generated/component.js";
 
