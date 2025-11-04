@@ -12,9 +12,9 @@ import {
   httpActionGeneric,
   HttpRouter,
 } from "convex/server";
-import { api } from "../component/_generated/api.js";
-import { GenericId, Infer } from "convex/values";
+import { Infer } from "convex/values";
 import schema from "../component/schema.js";
+import type { ComponentApi } from "../component/_generated/component.js";
 
 export const messageValidator = schema.tables.messages.validator;
 export type Message = Infer<typeof messageValidator>;
@@ -36,14 +36,14 @@ export class Twilio<
   public defaultOutgoingMessageCallback?: MessageHandler;
 
   constructor(
-    public componentApi: componentApiType,
+    public componentApi: ComponentApi,
     options: {
       TWILIO_ACCOUNT_SID?: string;
       TWILIO_AUTH_TOKEN?: string;
       httpPrefix?: string;
       incomingMessageCallback?: MessageHandler;
       defaultOutgoingMessageCallback?: MessageHandler;
-    } & From,
+    } & From
   ) {
     this.accountSid =
       options?.TWILIO_ACCOUNT_SID ?? process.env.TWILIO_ACCOUNT_SID!;
@@ -53,7 +53,7 @@ export class Twilio<
       throw new Error(
         "Missing Twilio credentials\n\n" +
           "npx convex env set TWILIO_ACCOUNT_SID=ACxxxxx\n" +
-          "npx convex env set TWILIO_AUTH_TOKEN=xxxxx",
+          "npx convex env set TWILIO_AUTH_TOKEN=xxxxx"
       );
     }
     this.defaultFrom = options.defaultFrom;
@@ -105,16 +105,19 @@ export class Twilio<
             incomingMessageCallback:
               this.incomingMessageCallback &&
               (await createFunctionHandle(this.incomingMessageCallback)),
-          },
+          }
         );
 
         const emptyResponseTwiML = `
 <?xml version="1.0" encoding="UTF-8"?>
 <Response></Response>`;
 
-        return new Response(emptyResponseTwiML, { status: 200, headers: {
-          'Content-Type': 'application/xml',
-        } });
+        return new Response(emptyResponseTwiML, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/xml",
+          },
+        });
       }),
     });
   }
@@ -140,7 +143,7 @@ export class Twilio<
       } & (From["defaultFrom"] extends string
         ? { from?: string }
         : { from: string })
-    >,
+    >
   ) {
     const from = args.from ?? this.defaultFrom;
     if (!from) {
@@ -266,7 +269,7 @@ export class Twilio<
    */
   async getMessagesFrom(
     ctx: RunQueryCtx,
-    args: { from: string; limit?: number },
+    args: { from: string; limit?: number }
   ) {
     return ctx.runQuery(this.componentApi.messages.getFrom, {
       ...args,
@@ -285,7 +288,7 @@ export class Twilio<
    */
   async getMessagesByCounterparty(
     ctx: RunQueryCtx,
-    args: { counterparty: string; limit?: number },
+    args: { counterparty: string; limit?: number }
   ) {
     return ctx.runQuery(this.componentApi.messages.getByCounterparty, {
       ...args,
@@ -295,35 +298,6 @@ export class Twilio<
 }
 export default Twilio;
 
-export type OpaqueIds<T> =
-  T extends GenericId<infer _T>
-    ? string
-    : T extends FunctionHandle<FunctionType>
-      ? string
-      : T extends (infer U)[]
-        ? OpaqueIds<U>[]
-        : T extends object
-          ? { [K in keyof T]: OpaqueIds<T[K]> }
-          : T;
-
-export type UseApi<API> = Expand<{
-  [mod in keyof API]: API[mod] extends FunctionReference<
-    infer FType,
-    "public",
-    infer FArgs,
-    infer FReturnType,
-    infer FComponentPath
-  >
-    ? FunctionReference<
-        FType,
-        "internal",
-        OpaqueIds<FArgs>,
-        OpaqueIds<FReturnType>,
-        FComponentPath
-      >
-    : UseApi<API[mod]>;
-}>;
-
 // on the Convex backend.
 declare global {
   const Convex: Record<string, unknown>;
@@ -331,10 +305,9 @@ declare global {
 
 if (typeof Convex === "undefined") {
   throw new Error(
-    "this is Convex backend code, but it's running somewhere else!",
+    "this is Convex backend code, but it's running somewhere else!"
   );
 }
-type componentApiType = UseApi<typeof api>;
 
 type RunActionCtx = {
   runAction: GenericActionCtx<GenericDataModel>["runAction"];

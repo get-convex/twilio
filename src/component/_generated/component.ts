@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * Generated `api` utility.
+ * Generated `ComponentApi` utility.
  *
  * THIS CODE IS AUTOMATICALLY GENERATED.
  *
@@ -8,48 +8,21 @@
  * @module
  */
 
-import type * as example from "../example.js";
-import type * as http from "../http.js";
-
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
-
-declare const fullApi: ApiFromModules<{
-  example: typeof example;
-  http: typeof http;
-}>;
+import type { FunctionReference } from "convex/server";
 
 /**
- * A utility for referencing Convex functions in your app's public API.
+ * A utility for referencing a Convex component's exposed API.
  *
+ * Useful when expecting a parameter like `components.myComponent`.
  * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
+ * ```ts
+ * async function myFunction(ctx: QueryCtx, component: ComponentApi) {
+ *   return ctx.runQuery(component.someFile.someQuery, { ...args });
+ * }
  * ```
  */
-export declare const api: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "public">
->;
-
-/**
- * A utility for referencing Convex functions in your app's internal API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = internal.myModule.myFunction;
- * ```
- */
-export declare const internal: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "internal">
->;
-
-export declare const components: {
-  twilio: {
+export type ComponentApi<Name extends string | undefined = string | undefined> =
+  {
     messages: {
       create: FunctionReference<
         "action",
@@ -86,7 +59,8 @@ export declare const components: {
           subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
-        }
+        },
+        Name
       >;
       getByCounterparty: FunctionReference<
         "query",
@@ -115,7 +89,8 @@ export declare const components: {
           subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
-        }>
+        }>,
+        Name
       >;
       getBySid: FunctionReference<
         "query",
@@ -144,7 +119,8 @@ export declare const components: {
           subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
-        } | null
+        } | null,
+        Name
       >;
       getFrom: FunctionReference<
         "query",
@@ -173,7 +149,8 @@ export declare const components: {
           subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
-        }>
+        }>,
+        Name
       >;
       getFromTwilioBySidAndInsert: FunctionReference<
         "action",
@@ -207,7 +184,8 @@ export declare const components: {
           subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
-        }
+        },
+        Name
       >;
       getTo: FunctionReference<
         "query",
@@ -236,7 +214,8 @@ export declare const components: {
           subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
-        }>
+        }>,
+        Name
       >;
       list: FunctionReference<
         "query",
@@ -265,7 +244,8 @@ export declare const components: {
           subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
-        }>
+        }>,
+        Name
       >;
       listIncoming: FunctionReference<
         "query",
@@ -294,7 +274,8 @@ export declare const components: {
           subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
-        }>
+        }>,
+        Name
       >;
       listOutgoing: FunctionReference<
         "query",
@@ -323,13 +304,15 @@ export declare const components: {
           subresource_uris: { feedback?: string; media: string } | null;
           to: string;
           uri: string;
-        }>
+        }>,
+        Name
       >;
       updateStatus: FunctionReference<
         "mutation",
         "internal",
         { account_sid: string; sid: string; status: string },
-        null
+        null,
+        Name
       >;
     };
     phone_numbers: {
@@ -337,7 +320,8 @@ export declare const components: {
         "action",
         "internal",
         { account_sid: string; auth_token: string; number: string },
-        any
+        any,
+        Name
       >;
       updateSmsUrl: FunctionReference<
         "action",
@@ -348,8 +332,8 @@ export declare const components: {
           sid: string;
           sms_url: string;
         },
-        any
+        any,
+        Name
       >;
     };
   };
-};
