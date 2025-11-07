@@ -68,6 +68,7 @@
     "@types/node": "20.19.24",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
+    "chokidar-cli": "3.0.0",
     "convex-test": "^0.0.38",
     "eslint": "^9.38.0",
     "eslint-plugin-react-hooks": "^7.0.1",
