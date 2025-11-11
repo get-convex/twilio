@@ -1,4 +1,4 @@
-import { v, VString } from "convex/values";
+import { v, type VString } from "convex/values";
 import {
   action,
   internalMutation,
@@ -8,13 +8,13 @@ import {
 import { internal } from "./_generated/api.js";
 import { twilioRequest } from "./utils.js";
 import schema from "./schema.js";
-import {
+import type {
   FunctionHandle,
   NamedTableInfo,
   Query,
   WithoutSystemFields,
 } from "convex/server";
-import { DataModel, Doc } from "./_generated/dataModel.js";
+import type { DataModel, Doc } from "./_generated/dataModel.js";
 
 export type Message = WithoutSystemFields<Doc<"messages">>;
 const callbackValidator = v.string() as VString<
@@ -246,7 +246,6 @@ export const getFromTwilioBySidAndInsert = action({
   },
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertToDatabaseMessage(message: any) {
   const {
     account_sid,

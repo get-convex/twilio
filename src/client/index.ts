@@ -2,19 +2,17 @@
 
 import {
   createFunctionHandle,
-  Expand,
-  FunctionHandle,
-  FunctionReference,
-  FunctionType,
-  GenericActionCtx,
-  GenericDataModel,
-  GenericQueryCtx,
+  type Expand,
+  type FunctionReference,
+  type GenericActionCtx,
+  type GenericDataModel,
+  type GenericQueryCtx,
   httpActionGeneric,
   HttpRouter,
 } from "convex/server";
-import { api } from "../component/_generated/api.js";
-import { GenericId, Infer } from "convex/values";
+import type { Infer } from "convex/values";
 import schema from "../component/schema.js";
+import type { ComponentApi } from "../component/_generated/component.js";
 
 export const messageValidator = schema.tables.messages.validator;
 export type Message = Infer<typeof messageValidator>;
@@ -36,7 +34,7 @@ export class Twilio<
   public defaultOutgoingMessageCallback?: MessageHandler;
 
   constructor(
-    public componentApi: componentApiType,
+    public componentApi: ComponentApi,
     options: {
       TWILIO_ACCOUNT_SID?: string;
       TWILIO_AUTH_TOKEN?: string;
@@ -112,9 +110,12 @@ export class Twilio<
 <?xml version="1.0" encoding="UTF-8"?>
 <Response></Response>`;
 
-        return new Response(emptyResponseTwiML, { status: 200, headers: {
-          'Content-Type': 'application/xml',
-        } });
+        return new Response(emptyResponseTwiML, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/xml",
+          },
+        });
       }),
     });
   }
@@ -295,35 +296,6 @@ export class Twilio<
 }
 export default Twilio;
 
-export type OpaqueIds<T> =
-  T extends GenericId<infer _T>
-    ? string
-    : T extends FunctionHandle<FunctionType>
-      ? string
-      : T extends (infer U)[]
-        ? OpaqueIds<U>[]
-        : T extends object
-          ? { [K in keyof T]: OpaqueIds<T[K]> }
-          : T;
-
-export type UseApi<API> = Expand<{
-  [mod in keyof API]: API[mod] extends FunctionReference<
-    infer FType,
-    "public",
-    infer FArgs,
-    infer FReturnType,
-    infer FComponentPath
-  >
-    ? FunctionReference<
-        FType,
-        "internal",
-        OpaqueIds<FArgs>,
-        OpaqueIds<FReturnType>,
-        FComponentPath
-      >
-    : UseApi<API[mod]>;
-}>;
-
 // on the Convex backend.
 declare global {
   const Convex: Record<string, unknown>;
@@ -334,7 +306,6 @@ if (typeof Convex === "undefined") {
     "this is Convex backend code, but it's running somewhere else!",
   );
 }
-type componentApiType = UseApi<typeof api>;
 
 type RunActionCtx = {
   runAction: GenericActionCtx<GenericDataModel>["runAction"];

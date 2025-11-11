@@ -4,9 +4,8 @@ import {
   internalAction,
   internalMutation,
   internalQuery,
-  mutation,
 } from "./_generated/server.js";
-import { api, internal } from "./_generated/api.js";
+import { internal } from "./_generated/api.js";
 import { twilioRequest } from "./utils.js";
 import schema from "./schema.js";
 
@@ -136,13 +135,7 @@ export const updateSmsUrl = action({
     const body = {
       SmsUrl: args.sms_url,
     };
-    const response = await twilioRequest(
-      path,
-      args.account_sid,
-      args.auth_token,
-      body,
-      "POST",
-    );
+    await twilioRequest(path, args.account_sid, args.auth_token, body, "POST");
     await ctx.runMutation(internal.phone_numbers.patch, {
       convexId,
       sms_url: args.sms_url,

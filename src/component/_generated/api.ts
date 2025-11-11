@@ -8,19 +8,22 @@
  * @module
  */
 
-import type * as example from "../example.js";
-import type * as http from "../http.js";
+import type * as messages from "../messages.js";
+import type * as phone_numbers from "../phone_numbers.js";
+import type * as utils from "../utils.js";
 
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import { anyApi, componentsGeneric } from "convex/server";
 
-declare const fullApi: ApiFromModules<{
-  example: typeof example;
-  http: typeof http;
-}>;
+const fullApi: ApiFromModules<{
+  messages: typeof messages;
+  phone_numbers: typeof phone_numbers;
+  utils: typeof utils;
+}> = anyApi as any;
 
 /**
  * A utility for referencing Convex functions in your app's public API.
@@ -30,10 +33,10 @@ declare const fullApi: ApiFromModules<{
  * const myFunctionReference = api.myModule.myFunction;
  * ```
  */
-export declare const api: FilterApi<
+export const api: FilterApi<
   typeof fullApi,
   FunctionReference<any, "public">
->;
+> = anyApi as any;
 
 /**
  * A utility for referencing Convex functions in your app's internal API.
@@ -43,11 +46,9 @@ export declare const api: FilterApi<
  * const myFunctionReference = internal.myModule.myFunction;
  * ```
  */
-export declare const internal: FilterApi<
+export const internal: FilterApi<
   typeof fullApi,
   FunctionReference<any, "internal">
->;
+> = anyApi as any;
 
-export declare const components: {
-  twilio: import("@convex-dev/twilio/_generated/component.js").ComponentApi<"twilio">;
-};
+export const components = componentsGeneric() as unknown as {};
