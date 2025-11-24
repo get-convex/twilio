@@ -78,6 +78,7 @@ export default defineSchema({
     voice_fallback_url: v.string(),
     voice_method: v.string(),
     voice_url: v.string(),
+    voice_receive_mode: v.optional(v.string()),
   })
     .index("by_phone_number", ["account_sid", "phone_number"])
     .index("by_sid", ["account_sid", "sid"]),
