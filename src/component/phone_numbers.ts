@@ -40,7 +40,21 @@ export const insert = internalMutation({
   },
   returns: v.id("phone_numbers"),
   handler: async (ctx, args) => {
-    return await ctx.db.insert("phone_numbers", args.phone_number);
+    // It might have extra fields so we need to sanitize it before inserting into the table
+    const sanitizedData: Record<string, any> = {};
+    Object.keys(args.phone_number).forEach((field) => {
+      if (
+        Object.keys(schema.tables.phone_numbers.validator.fields).includes(
+          field,
+        )
+      ) {
+        sanitizedData[field] = args.phone_number[field];
+      } else {
+        console.warn(`Unexpected field ${field} in phone number data`);
+      }
+    });
+
+    return await ctx.db.insert("phone_numbers", sanitizedData as any);
   },
 });
 
