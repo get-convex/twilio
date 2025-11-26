@@ -1,3 +1,6 @@
+import { parse } from "convex-helpers/validators";
+import type { Validator, Infer } from "convex/values";
+
 export const twilioRequest = async function (
   path: string,
   account_sid: string,
@@ -32,3 +35,23 @@ export const twilioRequest = async function (
   }
   return await response.json();
 };
+
+/**
+ * Generic function to attempt parsing with proper TypeScript type narrowing
+ */
+export function attemptToParse<T extends Validator<any, any, any>>(
+  validator: T,
+  value: unknown,
+): { kind: "success"; data: Infer<T> } | { kind: "error"; error: unknown } {
+  try {
+    return {
+      kind: "success",
+      data: parse(validator, value),
+    };
+  } catch (error) {
+    return {
+      kind: "error",
+      error,
+    };
+  }
+}
