@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Updates the schema for twilio's response changes, and makes the parsing more
+  robust.
+
 ## 0.2.0
 
 - Adds /test and /\_generated/component.js entrypoints
