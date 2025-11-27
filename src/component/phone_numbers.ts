@@ -6,7 +6,7 @@ import {
   internalQuery,
 } from "./_generated/server.js";
 import { internal } from "./_generated/api.js";
-import { twilioRequest } from "./utils.js";
+import { twilioRequest, attemptToParse } from "./utils.js";
 import schema from "./schema.js";
 
 export const create = action({
@@ -40,7 +40,18 @@ export const insert = internalMutation({
   },
   returns: v.id("phone_numbers"),
   handler: async (ctx, args) => {
-    return await ctx.db.insert("phone_numbers", args.phone_number);
+    // It might have extra fields so we need to sanitize it before inserting into the table
+    const result = attemptToParse(
+      schema.tables.phone_numbers.validator,
+      args.phone_number,
+    );
+
+    if (result.kind === "error") {
+      console.error("Failed to parse phone number data:", result.error);
+      throw new Error("Invalid phone number data");
+    }
+
+    return await ctx.db.insert("phone_numbers", result.data);
   },
 });
 

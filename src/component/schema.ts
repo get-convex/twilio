@@ -39,10 +39,10 @@ export default defineSchema({
   phone_numbers: defineTable({
     account_sid: v.string(),
     address_requirements: v.string(),
-    address_sid: v.null(),
+    address_sid: v.union(v.string(), v.null()),
     api_version: v.string(),
     beta: v.boolean(),
-    bundle_sid: v.null(),
+    bundle_sid: v.union(v.string(), v.null()),
     capabilities: v.object({
       fax: v.boolean(),
       mms: v.boolean(),
@@ -51,11 +51,11 @@ export default defineSchema({
     }),
     date_created: v.string(),
     date_updated: v.string(),
-    emergency_address_sid: v.null(),
+    emergency_address_sid: v.union(v.string(), v.null()),
     emergency_address_status: v.string(),
     emergency_status: v.string(),
     friendly_name: v.string(),
-    identity_sid: v.null(),
+    identity_sid: v.union(v.string(), v.null()),
     origin: v.string(),
     phone_number: v.string(),
     sid: v.string(),
@@ -70,7 +70,7 @@ export default defineSchema({
     subresource_uris: v.object({
       assigned_add_ons: v.string(),
     }),
-    trunk_sid: v.null(),
+    trunk_sid: v.union(v.string(), v.null()),
     uri: v.string(),
     voice_application_sid: v.string(),
     voice_caller_id_lookup: v.boolean(),
@@ -78,6 +78,7 @@ export default defineSchema({
     voice_fallback_url: v.string(),
     voice_method: v.string(),
     voice_url: v.string(),
+    voice_receive_mode: v.optional(v.string()),
   })
     .index("by_phone_number", ["account_sid", "phone_number"])
     .index("by_sid", ["account_sid", "sid"]),
