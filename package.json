@@ -1,7 +1,7 @@
 {
   "name": "@convex-dev/twilio",
   "description": "Convex component for sending/receiving SMS messages with Twilio.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "repository": "github:get-convex/twilio",
   "homepage": "https://github.com/get-convex/twilio#readme",
