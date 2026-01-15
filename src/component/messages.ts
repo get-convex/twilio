@@ -246,6 +246,13 @@ export const getFromTwilioBySidAndInsert = action({
   },
 });
 
+function detectChannel(from: string, to: string): "sms" | "whatsapp" {
+  if (from?.startsWith("whatsapp:") || to?.startsWith("whatsapp:")) {
+    return "whatsapp";
+  }
+  return "sms";
+}
+
 function convertToDatabaseMessage(message: any) {
   const {
     account_sid,
@@ -275,6 +282,7 @@ function convertToDatabaseMessage(message: any) {
     account_sid,
     api_version,
     body,
+    channel: detectChannel(from, to),
     counterparty,
     date_created,
     date_sent,

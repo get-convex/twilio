@@ -6,6 +6,7 @@ export default defineSchema({
     account_sid: v.string(),
     api_version: v.string(),
     body: v.string(),
+    channel: v.optional(v.union(v.literal("sms"), v.literal("whatsapp"))),
     counterparty: v.optional(v.string()),
     date_created: v.string(),
     date_sent: v.union(v.string(), v.null()),

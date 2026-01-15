@@ -4,7 +4,7 @@
 
 <!-- START: Include on https://convex.dev/components -->
 
-Send and receive SMS messages in your Convex app using Twilio.
+Send and receive SMS and WhatsApp messages in your Convex app using Twilio.
 
 ```ts
 import { Twilio } from "@convex-dev/twilio";
@@ -98,7 +98,9 @@ export default http;
 
 ## Sending Messages
 
-To send a message use the Convex action `sendMessage`:
+### SMS
+
+To send an SMS message use the Convex action `sendMessage`:
 
 ```ts
 // convex/messages.ts
@@ -114,6 +116,38 @@ export const sendSms = internalAction({
   },
 });
 ```
+
+### WhatsApp
+
+To send a WhatsApp message, you can either use the `channel` parameter or the
+convenience method `sendWhatsAppMessage`:
+
+```ts
+// Using the channel parameter
+export const sendWhatsApp = internalAction({
+  handler: async (ctx, args) => {
+    const status = await twilio.sendMessage(ctx, {
+      to: "+14158675309",
+      body: "Hey Jenny via WhatsApp!",
+      channel: "whatsapp",
+    });
+  },
+});
+
+// Using the convenience method
+export const sendWhatsAppAlt = internalAction({
+  handler: async (ctx, args) => {
+    const status = await twilio.sendWhatsAppMessage(ctx, {
+      to: "+14158675309",
+      body: "Hey Jenny via WhatsApp!",
+    });
+  },
+});
+```
+
+Note: WhatsApp requires additional setup in your Twilio account. See
+[Twilio's WhatsApp documentation](https://www.twilio.com/docs/whatsapp) for
+details on setting up a WhatsApp sender.
 
 By querying the message (see [below](#querying-messages)) you can check for the
 status
@@ -167,7 +201,9 @@ export const registerIncomingSmsHandler = internalAction({
 ```
 
 Once it is configured, incoming messages will be captured by the component and
-logged in the `messages` table.
+logged in the `messages` table. This works for both SMS and WhatsApp messages -
+the component automatically detects the channel based on the phone number format
+and stores it in the `channel` field.
 
 You can execute your own logic upon receiving an incoming message, by providing
 a callback when instantiating the Twilio Component client:

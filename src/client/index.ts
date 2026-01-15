@@ -16,6 +16,18 @@ import type { ComponentApi } from "../component/_generated/component.js";
 
 export const messageValidator = schema.tables.messages.validator;
 export type Message = Infer<typeof messageValidator>;
+export type Channel = "sms" | "whatsapp";
+
+/**
+ * Formats a phone number for the specified channel.
+ * WhatsApp numbers require the "whatsapp:" prefix.
+ */
+function formatPhoneNumber(phone: string, channel: Channel): string {
+  if (channel === "whatsapp" && !phone.startsWith("whatsapp:")) {
+    return `whatsapp:${phone}`;
+  }
+  return phone;
+}
 
 export type MessageHandler = FunctionReference<
   "mutation",
@@ -124,8 +136,9 @@ export class Twilio<
    *
    * @param ctx - A Convex context for running the action.
    * @param args - The arguments for sending the message.
-   * @param args.to - The recipient's phone number e.g. +14151234567.
+   * @param args.to - The recipient's phone number e.g. +14151234567 (or whatsapp:+14151234567 for WhatsApp).
    * @param args.body - The body of the message.
+   * @param args.channel - The messaging channel: "sms" (default) or "whatsapp".
    * @param args.callback - An optional callback function to be called after successfully sending.
    * @param args.from - The sender's phone number. If not provided, the default from number is used.
    * @throws {Error} If the from number is missing and no default from number is set.
@@ -137,19 +150,21 @@ export class Twilio<
       {
         to: string;
         body: string;
+        channel?: Channel;
         callback?: MessageHandler;
       } & (From["defaultFrom"] extends string
         ? { from?: string }
         : { from: string })
     >,
   ) {
+    const channel = args.channel ?? "sms";
     const from = args.from ?? this.defaultFrom;
     if (!from) {
       throw new Error("Missing from number");
     }
     return ctx.runAction(this.componentApi.messages.create, {
-      from,
-      to: args.to,
+      from: formatPhoneNumber(from, channel),
+      to: formatPhoneNumber(args.to, channel),
       body: args.body,
       account_sid: this.accountSid,
       auth_token: this.authToken,
@@ -160,6 +175,34 @@ export class Twilio<
         : this.defaultOutgoingMessageCallback &&
           (await createFunctionHandle(this.defaultOutgoingMessageCallback)),
     });
+  }
+
+  /**
+   * Sends a WhatsApp message using the Twilio API.
+   * This is a convenience method that calls sendMessage with channel: "whatsapp".
+   *
+   * @param ctx - A Convex context for running the action.
+   * @param args - The arguments for sending the message.
+   * @param args.to - The recipient's phone number e.g. +14151234567.
+   * @param args.body - The body of the message.
+   * @param args.callback - An optional callback function to be called after successfully sending.
+   * @param args.from - The sender's WhatsApp number. If not provided, the default from number is used.
+   * @throws {Error} If the from number is missing and no default from number is set.
+   * @returns A promise that resolves with the result of the message creation action.
+   */
+  async sendWhatsAppMessage(
+    ctx: RunActionCtx,
+    args: Expand<
+      {
+        to: string;
+        body: string;
+        callback?: MessageHandler;
+      } & (From["defaultFrom"] extends string
+        ? { from?: string }
+        : { from: string })
+    >,
+  ) {
+    return this.sendMessage(ctx, { ...args, channel: "whatsapp" } as any);
   }
 
   /**
