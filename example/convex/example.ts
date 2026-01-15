@@ -28,6 +28,16 @@ export const sendSms = internalAction({
   },
 });
 
+export const sendWhatsApp = internalAction({
+  args: {
+    to: v.string(),
+    body: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await twilio.sendMessage(ctx, { ...args, channel: "whatsapp" });
+  },
+});
+
 export const registerIncomingSmsHandler = internalAction({
   args: {},
   handler: async (ctx) => {
