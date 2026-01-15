@@ -119,27 +119,15 @@ export const sendSms = internalAction({
 
 ### WhatsApp
 
-To send a WhatsApp message, you can either use the `channel` parameter or the
-convenience method `sendWhatsAppMessage`:
+To send a WhatsApp message, use the `channel` parameter:
 
 ```ts
-// Using the channel parameter
 export const sendWhatsApp = internalAction({
   handler: async (ctx, args) => {
     const status = await twilio.sendMessage(ctx, {
       to: "+14158675309",
       body: "Hey Jenny via WhatsApp!",
       channel: "whatsapp",
-    });
-  },
-});
-
-// Using the convenience method
-export const sendWhatsAppAlt = internalAction({
-  handler: async (ctx, args) => {
-    const status = await twilio.sendWhatsAppMessage(ctx, {
-      to: "+14158675309",
-      body: "Hey Jenny via WhatsApp!",
     });
   },
 });

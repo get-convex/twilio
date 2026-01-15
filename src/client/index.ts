@@ -178,34 +178,6 @@ export class Twilio<
   }
 
   /**
-   * Sends a WhatsApp message using the Twilio API.
-   * This is a convenience method that calls sendMessage with channel: "whatsapp".
-   *
-   * @param ctx - A Convex context for running the action.
-   * @param args - The arguments for sending the message.
-   * @param args.to - The recipient's phone number e.g. +14151234567.
-   * @param args.body - The body of the message.
-   * @param args.callback - An optional callback function to be called after successfully sending.
-   * @param args.from - The sender's WhatsApp number. If not provided, the default from number is used.
-   * @throws {Error} If the from number is missing and no default from number is set.
-   * @returns A promise that resolves with the result of the message creation action.
-   */
-  async sendWhatsAppMessage(
-    ctx: RunActionCtx,
-    args: Expand<
-      {
-        to: string;
-        body: string;
-        callback?: MessageHandler;
-      } & (From["defaultFrom"] extends string
-        ? { from?: string }
-        : { from: string })
-    >,
-  ) {
-    return this.sendMessage(ctx, { ...args, channel: "whatsapp" } as any);
-  }
-
-  /**
    * Registers an incoming SMS handler for a Twilio phone number.
    *
    * @param ctx - The Convex function context.
