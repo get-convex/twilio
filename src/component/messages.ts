@@ -246,6 +246,10 @@ export const getFromTwilioBySidAndInsert = action({
   },
 });
 
+/**
+ * Detects the messaging channel based on phone number format.
+ * WhatsApp numbers are prefixed with "whatsapp:".
+ */
 function detectChannel(from: string, to: string): "sms" | "whatsapp" {
   if (from?.startsWith("whatsapp:") || to?.startsWith("whatsapp:")) {
     return "whatsapp";
