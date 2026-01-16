@@ -1,6 +1,48 @@
 import { parse } from "convex-helpers/validators";
 import type { Validator, Infer } from "convex/values";
 
+/**
+ * Validates Twilio webhook signature using HMAC-SHA1.
+ * See: https://www.twilio.com/docs/usage/security#validating-requests
+ *
+ * @param authToken - The Twilio auth token for this account
+ * @param signature - The X-Twilio-Signature header value
+ * @param url - The full URL of the webhook request
+ * @param params - The POST parameters as a Record
+ * @returns true if signature is valid, false otherwise
+ */
+export async function validateTwilioSignature(
+  authToken: string,
+  signature: string,
+  url: string,
+  params: Record<string, string>
+): Promise<boolean> {
+  // Sort params alphabetically by key and append to URL
+  const sortedKeys = Object.keys(params).sort();
+  let dataToSign = url;
+  for (const key of sortedKeys) {
+    dataToSign += key + params[key];
+  }
+
+  // Create HMAC-SHA1 hash using Web Crypto API (available in Convex runtime)
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(authToken);
+  const messageData = encoder.encode(dataToSign);
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-1" },
+    false,
+    ["sign"]
+  );
+
+  const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
+  const expectedSignature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)));
+
+  return signature === expectedSignature;
+}
+
 export const twilioRequest = async function (
   path: string,
   account_sid: string,

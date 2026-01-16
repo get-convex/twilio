@@ -160,6 +160,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           auth_token: string;
           incomingMessageCallback?: string;
           sid: string;
+          tenantId?: string;
         },
         {
           account_sid: string;

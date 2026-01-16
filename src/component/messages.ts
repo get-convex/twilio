@@ -18,7 +18,7 @@ import type { DataModel, Doc } from "./_generated/dataModel.js";
 
 export type Message = WithoutSystemFields<Doc<"messages">>;
 const callbackValidator = v.string() as VString<
-  FunctionHandle<"mutation", { message: Message }>
+  FunctionHandle<"mutation", { message: Message; tenantId?: string }>
 >;
 
 export const create = action({
@@ -57,6 +57,7 @@ export const insert = internalMutation({
   args: {
     message: schema.tables.messages.validator,
     callback: v.optional(callbackValidator),
+    tenantId: v.optional(v.string()),
   },
   returns: schema.tables.messages.validator,
   handler: async (ctx, args): Promise<WithoutSystemFields<Doc<"messages">>> => {
@@ -66,7 +67,11 @@ export const insert = internalMutation({
         : args.message.to;
     await ctx.db.insert("messages", args.message);
     if (args.callback) {
-      await ctx.runMutation(args.callback, { message: args.message });
+      // Pass tenantId to callback for multi-tenant setups
+      await ctx.runMutation(args.callback, {
+        message: args.message,
+        tenantId: args.tenantId,
+      });
     }
     return args.message;
   },
@@ -228,6 +233,7 @@ export const getFromTwilioBySidAndInsert = action({
     auth_token: v.string(),
     sid: v.string(),
     incomingMessageCallback: v.optional(callbackValidator),
+    tenantId: v.optional(v.string()),
   },
   returns: schema.tables.messages.validator,
   handler: async (ctx, args): Promise<WithoutSystemFields<Doc<"messages">>> => {
@@ -242,6 +248,7 @@ export const getFromTwilioBySidAndInsert = action({
     return ctx.runMutation(internal.messages.insert, {
       message: databaseMessage,
       callback: args.incomingMessageCallback,
+      tenantId: args.tenantId,
     });
   },
 });
