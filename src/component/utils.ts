@@ -1,6 +1,24 @@
 import { parse } from "convex-helpers/validators";
 import type { Validator, Infer } from "convex/values";
 
+const DEFAULT_TWILIO_API_BASE_URL = "https://api.twilio.com";
+
+export function resolveTwilioApiBaseUrl(): string {
+  const configured = process.env.TWILIO_API_BASE_URL?.trim();
+  const baseUrl =
+    configured && configured.length > 0
+      ? configured
+      : DEFAULT_TWILIO_API_BASE_URL;
+  return baseUrl.replace(/\/+$/, "");
+}
+
+export function buildTwilioRequestUrl(
+  path: string,
+  account_sid: string,
+): string {
+  return `${resolveTwilioApiBaseUrl()}/2010-04-01/Accounts/${account_sid}/${path}`;
+}
+
 export const twilioRequest = async function (
   path: string,
   account_sid: string,
@@ -8,7 +26,7 @@ export const twilioRequest = async function (
   body: Record<string, string>,
   method: "POST" | "GET" = "POST",
 ) {
-  const url = `https://api.twilio.com/2010-04-01/Accounts/${account_sid}/${path}`;
+  const url = buildTwilioRequestUrl(path, account_sid);
   const auth = btoa(`${account_sid}:${auth_token}`);
   const request: {
     method: "POST" | "GET";
