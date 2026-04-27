@@ -218,7 +218,7 @@ export const updateStatus = mutation({
     if (!message) {
       throw new Error("Message not found");
     }
-    await ctx.db.patch(message._id, { status: args.status });
+    await ctx.db.patch("messages", message._id, { status: args.status });
   },
 });
 

@@ -61,7 +61,7 @@ export const patch = internalMutation({
     sms_url: v.string(),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.patch(args.convexId, { sms_url: args.sms_url });
+    return await ctx.db.patch("phone_numbers", args.convexId, { sms_url: args.sms_url });
   },
 });
 
