@@ -6,6 +6,7 @@ import {
   type FunctionReference,
   type GenericActionCtx,
   type GenericDataModel,
+  type GenericMutationCtx,
   type GenericQueryCtx,
   httpActionGeneric,
   HttpRouter,
@@ -132,7 +133,7 @@ export class Twilio<
    * @returns A promise that resolves with the result of the message creation action.
    */
   async sendMessage(
-    ctx: RunActionCtx,
+    ctx: ActionCtx,
     args: Expand<
       {
         to: string;
@@ -170,7 +171,7 @@ export class Twilio<
    * @param args.sid - The SID of the phone number to update.
    * @returns A promise that resolves with the result of the action.
    */
-  async registerIncomingSmsHandler(ctx: RunActionCtx, args: { sid: string }) {
+  async registerIncomingSmsHandler(ctx: ActionCtx, args: { sid: string }) {
     return ctx.runAction(this.componentApi.phone_numbers.updateSmsUrl, {
       account_sid: this.accountSid,
       auth_token: this.authToken,
@@ -188,7 +189,10 @@ export class Twilio<
    * @param args.limit - The maximum number of messages to retrieve.
    * @returns A promise that resolves with the list of messages.
    */
-  async list(ctx: RunQueryCtx, args?: { limit?: number }) {
+  async list(
+    ctx: QueryCtx | MutationCtx | ActionCtx,
+    args?: { limit?: number },
+  ) {
     return ctx.runQuery(this.componentApi.messages.list, {
       ...args,
       account_sid: this.accountSid,
@@ -203,7 +207,10 @@ export class Twilio<
    * @param args.limit - The maximum number of messages to retrieve.
    * @returns A promise that resolves with the list of messages.
    */
-  async listIncoming(ctx: RunQueryCtx, args?: { limit?: number }) {
+  async listIncoming(
+    ctx: QueryCtx | MutationCtx | ActionCtx,
+    args?: { limit?: number },
+  ) {
     return ctx.runQuery(this.componentApi.messages.listIncoming, {
       ...args,
       account_sid: this.accountSid,
@@ -218,7 +225,10 @@ export class Twilio<
    * @param args.limit - The maximum number of messages to retrieve.
    * @returns A promise that resolves with the list of messages.
    */
-  async listOutgoing(ctx: RunQueryCtx, args?: { limit?: number }) {
+  async listOutgoing(
+    ctx: QueryCtx | MutationCtx | ActionCtx,
+    args?: { limit?: number },
+  ) {
     return ctx.runQuery(this.componentApi.messages.listOutgoing, {
       ...args,
       account_sid: this.accountSid,
@@ -233,7 +243,10 @@ export class Twilio<
    * @param args.sid - The SID of the message to retrieve.
    * @returns A promise that resolves with the message details.
    */
-  async getMessageBySid(ctx: RunQueryCtx, args: { sid: string }) {
+  async getMessageBySid(
+    ctx: QueryCtx | MutationCtx | ActionCtx,
+    args: { sid: string },
+  ) {
     return ctx.runQuery(this.componentApi.messages.getBySid, {
       account_sid: this.accountSid,
       sid: args.sid,
@@ -249,7 +262,10 @@ export class Twilio<
    * @param args.limit - Optional. The maximum number of messages to retrieve.
    * @returns A promise that resolves with the list of messages.
    */
-  async getMessagesTo(ctx: RunQueryCtx, args: { to: string; limit?: number }) {
+  async getMessagesTo(
+    ctx: QueryCtx | MutationCtx | ActionCtx,
+    args: { to: string; limit?: number },
+  ) {
     return ctx.runQuery(this.componentApi.messages.getTo, {
       ...args,
       account_sid: this.accountSid,
@@ -266,7 +282,7 @@ export class Twilio<
    * @returns A promise that resolves with the list of messages.
    */
   async getMessagesFrom(
-    ctx: RunQueryCtx,
+    ctx: QueryCtx | MutationCtx | ActionCtx,
     args: { from: string; limit?: number },
   ) {
     return ctx.runQuery(this.componentApi.messages.getFrom, {
@@ -285,7 +301,7 @@ export class Twilio<
    * @returns A promise that resolves with the list of messages.
    */
   async getMessagesByCounterparty(
-    ctx: RunQueryCtx,
+    ctx: QueryCtx | MutationCtx | ActionCtx,
     args: { counterparty: string; limit?: number },
   ) {
     return ctx.runQuery(this.componentApi.messages.getByCounterparty, {
@@ -307,9 +323,12 @@ if (typeof Convex === "undefined") {
   );
 }
 
-type RunActionCtx = {
-  runAction: GenericActionCtx<GenericDataModel>["runAction"];
-};
-type RunQueryCtx = {
-  runQuery: GenericQueryCtx<GenericDataModel>["runQuery"];
-};
+type QueryCtx = Pick<GenericQueryCtx<GenericDataModel>, "runQuery">;
+type MutationCtx = Pick<
+  GenericMutationCtx<GenericDataModel>,
+  "runQuery" | "runMutation"
+>;
+type ActionCtx = Pick<
+  GenericActionCtx<GenericDataModel>,
+  "runQuery" | "runMutation" | "runAction"
+>;
