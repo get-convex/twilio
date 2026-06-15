@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+- Updates types for `ctx` arguments for better compatibility with Convex v1.41+
+
 ## 0.2.1
 
 - Updates the schema for twilio's response changes, and makes the parsing more
