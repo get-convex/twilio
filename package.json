@@ -78,7 +78,7 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.3",
     "globals": "17.8.0",
-    "pkg-pr-new": "0.0.80",
+    "pkg-pr-new": "0.0.82",
     "prettier": "3.9.6",
     "typescript": "5.9.3",
     "typescript-eslint": "8.65.0",
