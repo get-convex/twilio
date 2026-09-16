@@ -68,6 +68,17 @@ npx convex env set TWILIO_ACCOUNT_SID=ACxxxxx
 npx convex env set TWILIO_AUTH_TOKEN=xxxxx
 ```
 
+If you need to route Twilio REST API calls through a regional endpoint, you can
+optionally set a custom base URL:
+
+```sh
+# Optional: for regional Twilio routing such as EU (Dublin)
+npx convex env set TWILIO_API_BASE_URL=https://api.dublin.ie1.twilio.com
+```
+
+When `TWILIO_API_BASE_URL` is not set, the component defaults to
+`https://api.twilio.com`.
+
 Instantiate a Twilio Component client in a file in your app's `convex/` folder:
 
 ```ts
