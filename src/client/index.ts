@@ -126,7 +126,9 @@ export class Twilio<
    * @param ctx - A Convex context for running the action.
    * @param args - The arguments for sending the message.
    * @param args.to - The recipient's phone number e.g. +14151234567.
-   * @param args.body - The body of the message.
+   * @param args.body - The body of the message. Optional when contentSid is set.
+   * @param args.contentSid - Twilio Content API template SID (RCS/WhatsApp cards).
+   * @param args.contentVariables - JSON string of ContentVariables for the template.
    * @param args.callback - An optional callback function to be called after successfully sending.
    * @param args.from - The sender's phone number. If not provided, the default from number is used.
    * @throws {Error} If the from number is missing and no default from number is set.
@@ -137,7 +139,9 @@ export class Twilio<
     args: Expand<
       {
         to: string;
-        body: string;
+        body?: string;
+        contentSid?: string;
+        contentVariables?: string;
         callback?: MessageHandler;
       } & (From["defaultFrom"] extends string
         ? { from?: string }
@@ -151,7 +155,11 @@ export class Twilio<
     return ctx.runAction(this.componentApi.messages.create, {
       from,
       to: args.to,
-      body: args.body,
+      ...(args.body !== undefined ? { body: args.body } : {}),
+      ...(args.contentSid !== undefined ? { content_sid: args.contentSid } : {}),
+      ...(args.contentVariables !== undefined
+        ? { content_variables: args.contentVariables }
+        : {}),
       account_sid: this.accountSid,
       auth_token: this.authToken,
       status_callback:
