@@ -27,22 +27,29 @@ export const create = action({
     auth_token: v.string(),
     from: v.string(),
     to: v.string(),
-    body: v.string(),
+    body: v.optional(v.string()),
+    content_sid: v.optional(v.string()),
+    content_variables: v.optional(v.string()),
     status_callback: v.string(),
     callback: v.optional(callbackValidator),
   },
   returns: schema.tables.messages.validator,
   handler: async (ctx, args): Promise<Message> => {
+    const requestBody: Record<string, string> = {
+      From: args.from,
+      To: args.to,
+      StatusCallback: args.status_callback,
+    };
+    if (args.body !== undefined) requestBody.Body = args.body;
+    if (args.content_sid !== undefined) requestBody.ContentSid = args.content_sid;
+    if (args.content_variables !== undefined) {
+      requestBody.ContentVariables = args.content_variables;
+    }
     const message = await twilioRequest(
       "Messages.json",
       args.account_sid,
       args.auth_token,
-      {
-        From: args.from,
-        To: args.to,
-        Body: args.body,
-        StatusCallback: args.status_callback,
-      },
+      requestBody,
     );
     // store some properties as fields and the rest as a nested object
     const databaseMessage = convertToDatabaseMessage(message);
